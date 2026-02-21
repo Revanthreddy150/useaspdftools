@@ -1,129 +1,182 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PDF Tools Hub</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USEAS PDF Tools</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg: #f8faff;
+            --card-bg: #ffffff;
+            --primary: #6366f1;
+            --primary-light: #a5b4fc;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+        }
 
-<style>
-body{
-  font-family: Arial;
-  margin:0;
-  background:#f3f3f8;
-  text-align:center;
-}
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-.header{
-  padding:20px;
-  font-size:22px;
-  font-weight:bold;
-}
+        /* --- PROFESSIONAL ANIMATED HEADER --- */
+        header {
+            text-align: center;
+            padding: 80px 20px 50px 20px;
+            perspective: 1000px;
+        }
 
-.container{
-  padding:20px;
-}
+        .brand-container {
+            display: inline-block;
+            animation: fadeInDown 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
 
-.card{
-  background:white;
-  padding:30px;
-  border-radius:15px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.1);
-}
+        .brand-name {
+            font-size: 4.5rem;
+            font-weight: 900;
+            margin: 0;
+            letter-spacing: -2px;
+            /* Gradient Text & Shimmer Animation */
+            background: linear-gradient(
+                to right, 
+                var(--primary) 20%, 
+                #ec4899 40%, 
+                #8b5cf6 60%, 
+                var(--primary) 80%
+            );
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shine 5s linear infinite;
+        }
 
-button{
-  background:#5b5be0;
-  color:white;
-  border:none;
-  padding:12px 20px;
-  margin:10px;
-  border-radius:8px;
-  font-size:16px;
-  cursor:pointer;
-}
+        .sub-heading {
+            font-size: 1.2rem;
+            color: var(--text-sub);
+            margin-top: -5px;
+            font-weight: 500;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 0.5s forwards;
+        }
 
-button:hover{
-  opacity:0.8;
-}
+        /* Keyframes */
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
 
-.back{
-  text-align:left;
-  margin-bottom:20px;
-  cursor:pointer;
-  color:#5b5be0;
-  font-weight:bold;
-}
-.hidden{
-  display:none;
-}
-</style>
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- TOOL CARDS --- */
+        .container {
+            width: 100%;
+            max-width: 500px; /* Slim professional mobile-first width */
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-bottom: 80px;
+        }
+
+        .tool-card {
+            background: var(--card-bg);
+            padding: 20px 24px;
+            border-radius: 20px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(99, 102, 241, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .tool-card:hover {
+            transform: scale(1.02);
+            box-shadow: var(--shadow);
+            border-color: var(--primary-light);
+        }
+
+        .icon-box {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .bg-compress { background: linear-gradient(135deg, #10b981, #059669); }
+        .bg-merge    { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        .bg-rotate   { background: linear-gradient(135deg, #f43f5e, #e11d48); }
+        .bg-split    { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .content h3 { margin: 0; font-size: 1.15rem; color: var(--text-main); font-weight: 700; }
+        .content p { margin: 4px 0 0 0; font-size: 0.95rem; color: var(--text-sub); }
+
+    </style>
 </head>
-
 <body>
 
-<div class="header">PDF Tools Hub</div>
+    <header>
+        <div class="brand-container">
+            <div class="brand-name">USEAS</div>
+        </div>
+        <div class="sub-heading">PDF Tools</div>
+    </header>
 
-<div class="container">
+    <div class="container">
+        <a href="https://revanthreddy150.github.io/useaspdftools/compress" class="tool-card">
+            <div class="icon-box bg-compress"><i data-lucide="minimize-2"></i></div>
+            <div class="content">
+                <h3>Compress PDF</h3>
+                <p>Reduce file size without quality loss.</p>
+            </div>
+        </a>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="card">
+        <a href="https://revanthreddy150.github.io/useaspdftools/merge" class="tool-card">
+            <div class="icon-box bg-merge"><i data-lucide="layers"></i></div>
+            <div class="content">
+                <h3>Merge PDF</h3>
+                <p>Combine multiple files into one.</p>
+            </div>
+        </a>
 
-<h2>Select Tool</h2>
+        <a href="https://revanthreddy150.github.io/useaspdftools/rotate" class="tool-card">
+            <div class="icon-box bg-rotate"><i data-lucide="rotate-cw"></i></div>
+            <div class="content">
+                <h3>Rotate PDF</h3>
+                <p>Fix page orientation instantly.</p>
+            </div>
+        </a>
 
-<button onclick="openPage('compress')">Compress PDF</button>
-<button onclick="openPage('merge')">Merge PDF</button>
-<button onclick="openPage('rotate')">Rotate PDF</button>
-<button onclick="openPage('split')">Split PDF</button>
+        <a href="https://revanthreddy150.github.io/useaspdftools/split" class="tool-card">
+            <div class="icon-box bg-split"><i data-lucide="scissors"></i></div>
+            <div class="content">
+                <h3>Split PDF</h3>
+                <p>Extract pages into separate files.</p>
+            </div>
+        </a>
+    </div>
 
-</div>
-
-<!-- COMPRESS -->
-<div id="compress" class="card hidden">
-<div class="back" onclick="goBack()">← Back to Dashboard</div>
-<h2>Compress PDF</h2>
-<input type="file"><br><br>
-<button>Run Action</button>
-</div>
-
-<!-- MERGE -->
-<div id="merge" class="card hidden">
-<div class="back" onclick="goBack()">← Back to Dashboard</div>
-<h2>Merge PDF</h2>
-<input type="file" multiple><br><br>
-<button>Run Action</button>
-</div>
-
-<!-- ROTATE -->
-<div id="rotate" class="card hidden">
-<div class="back" onclick="goBack()">← Back to Dashboard</div>
-<h2>Rotate PDF</h2>
-<input type="file"><br><br>
-<button>Run Action</button>
-</div>
-
-<!-- SPLIT -->
-<div id="split" class="card hidden">
-<div class="back" onclick="goBack()">← Back to Dashboard</div>
-<h2>Split PDF</h2>
-<input type="file"><br><br>
-<button>Run Action</button>
-</div>
-
-</div>
-
-<script>
-function openPage(page){
-  document.getElementById("dashboard").classList.add("hidden");
-  document.getElementById(page).classList.remove("hidden");
-}
-
-function goBack(){
-  document.getElementById("dashboard").classList.remove("hidden");
-  document.getElementById("compress").classList.add("hidden");
-  document.getElementById("merge").classList.add("hidden");
-  document.getElementById("rotate").classList.add("hidden");
-  document.getElementById("split").classList.add("hidden");
-}
-</script>
-
+    <script>lucide.createIcons();</script>
 </body>
 </html>
