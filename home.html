@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Tools Hub</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #fdfbff;
+            --card-bg: #ffffff;
+            --text-main: #33334d;
+            --text-sub: #6b6b83;
+            --primary: #6366f1;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --border: 1.5px solid #eef0f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        h1 { font-size: 2.5rem; margin-bottom: 40px; }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+        }
+
+        .icon-box {
+            min-width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        /* Tool Specific Colors */
+        .bg-compress { background-color: #4ade80; } /* Green */
+        .bg-merge    { background-color: #6366f1; } /* Indigo */
+        .bg-rotate   { background-color: #f87171; } /* Red */
+        .bg-split    { background-color: #fbbf24; } /* Amber */
+
+        .content h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.3rem;
+        }
+
+        .content p {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--text-sub);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Manage Your PDF Documents</h1>
+
+    <div class="container">
+        <a href="compress.html" class="card">
+            <div class="icon-box bg-compress">
+                <i data-lucide="shrink"></i>
+            </div>
+            <div class="content">
+                <h3>Compress PDF</h3>
+                <p>Reduce the file size of your PDF while maintaining maximum quality.</p>
+            </div>
+        </a>
+
+        <a href="merge.html" class="card">
+            <div class="icon-box bg-merge">
+                <i data-lucide="combine"></i>
+            </div>
+            <div class="content">
+                <h3>Merge PDF</h3>
+                <p>Combine multiple PDF files into one single document easily.</p>
+            </div>
+        </a>
+
+        <a href="rotate.html" class="card">
+            <div class="icon-box bg-rotate">
+                <i data-lucide="rotate-cw"></i>
+            </div>
+            <div class="content">
+                <h3>Rotate PDF</h3>
+                <p>Rotate your PDF pages to the correct orientation in seconds.</p>
+            </div>
+        </a>
+
+        <a href="split.html" class="card">
+            <div class="icon-box bg-split">
+                <i data-lucide="scissors"></i>
+            </div>
+            <div class="content">
+                <h3>Split PDF</h3>
+                <p>Extract separate pages or ranges from your PDF into new files.</p>
+            </div>
+        </a>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+
