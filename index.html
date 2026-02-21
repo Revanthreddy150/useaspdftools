@@ -3,196 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Tools Hub</title>
+    <title>PDF Tools Hub | All-in-One PDF Editor</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
         :root {
-            --bg-color: #fdfbff;
-            --card-bg: #ffffff;
-            --text-main: #33334d;
-            --text-sub: #6b6b83;
             --primary: #6366f1;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            --border: 1.5px solid #eef0f5;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --title: #1e293b;
+            --text: #64748b;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
+            padding: 40px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            padding: 40px 20px;
         }
 
-        .container {
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            max-width: 600px;
+        }
+
+        header h1 {
+            color: var(--title);
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.025em;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .tool-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 24px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
         }
 
-        .card {
+        .tool-card {
             background: var(--card-bg);
-            border: var(--border);
+            padding: 32px;
             border-radius: 24px;
-            padding: 24px;
+            text-decoration: none;
+            color: inherit;
             display: flex;
             align-items: flex-start;
             gap: 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0,0,0,0.03);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
-        .card:hover {
-            transform: translateY(-5px);
+        .tool-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow);
             border-color: var(--primary);
         }
 
-        .icon-box {
-            min-width: 54px;
-            height: 54px;
-            border-radius: 14px;
+        .icon-container {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
             color: white;
         }
 
-        .bg-compress { background: #4ade80; }
-        .bg-merge    { background: #6366f1; }
-        .bg-rotate   { background: #f87171; }
-        .bg-split    { background: #fbbf24; }
+        /* Tool Specific Colors */
+        .c-compress { background: linear-gradient(135deg, #34d399, #10b981); }
+        .c-merge    { background: linear-gradient(135deg, #818cf8, #6366f1); }
+        .c-rotate   { background: linear-gradient(135deg, #fb7185, #f43f5e); }
+        .c-split    { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
 
-        /* Tool UI */
-        #tool-section {
-            display: none;
-            width: 100%;
-            max-width: 600px;
-            background: white;
-            padding: 30px;
-            border-radius: 24px;
-            box-shadow: var(--shadow);
-            text-align: center;
+        .content h3 {
+            margin: 0 0 8px 0;
+            color: var(--title);
+            font-size: 1.25rem;
+            font-weight: 700;
         }
 
-        .btn {
-            background: var(--primary);
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            margin-top: 20px;
-            font-weight: bold;
+        .content p {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
 
-        .back-btn {
-            align-self: flex-start;
-            margin-bottom: 20px;
-            cursor: pointer;
-            color: var(--primary);
-            display: none;
+        @media (max-width: 640px) {
+            .tool-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div id="back-link" class="back-btn" onclick="showHome()">← Back to Dashboard</div>
-    
-    <h1 id="main-title">Manage Your PDF Documents</h1>
+    <header>
+        <h1>Manage Your PDF Documents</h1>
+        <p>Professional-grade PDF tools to help you edit, merge, and organize your files effortlessly in your browser.</p>
+    </header>
 
-    <div class="container" id="dashboard">
-        <div class="card" onclick="openTool('compress')">
-            <div class="icon-box bg-compress"><i data-lucide="shrink"></i></div>
-            <div class="content"><h3>Compress PDF</h3><p>Optimize file size.</p></div>
-        </div>
+    <div class="tool-grid">
+        <a href="compress.html" class="tool-card">
+            <div class="icon-container c-compress">
+                <i data-lucide="minimize-2"></i>
+            </div>
+            <div class="content">
+                <h3>Compress PDF</h3>
+                <p>Reduce file size while keeping high quality.</p>
+            </div>
+        </a>
 
-        <div class="card" onclick="openTool('merge')">
-            <div class="icon-box bg-merge"><i data-lucide="combine"></i></div>
-            <div class="content"><h3>Merge PDF</h3><p>Combine multiple PDFs.</p></div>
-        </div>
+        <a href="merge.html" class="tool-card">
+            <div class="icon-container c-merge">
+                <i data-lucide="layers"></i>
+            </div>
+            <div class="content">
+                <h3>Merge PDF</h3>
+                <p>Combine multiple files into one document.</p>
+            </div>
+        </a>
 
-        <div class="card" onclick="openTool('rotate')">
-            <div class="icon-box bg-rotate"><i data-lucide="rotate-cw"></i></div>
-            <div class="content"><h3>Rotate PDF</h3><p>Flip pages 90 degrees.</p></div>
-        </div>
+        <a href="rotate.html" class="tool-card">
+            <div class="icon-container c-rotate">
+                <i data-lucide="refresh-cw"></i>
+            </div>
+            <div class="content">
+                <h3>Rotate PDF</h3>
+                <p>Flip pages to the correct orientation.</p>
+            </div>
+        </a>
 
-        <div class="card" onclick="openTool('split')">
-            <div class="icon-box bg-split"><i data-lucide="scissors"></i></div>
-            <div class="content"><h3>Split PDF</h3><p>Extract page 1 as a new file.</p></div>
-        </div>
-    </div>
-
-    <div id="tool-section">
-        <h2 id="tool-name">Tool Name</h2>
-        <input type="file" id="pdf-input" accept="application/pdf" multiple>
-        <br>
-        <button class="btn" onclick="processPDF()">Run Action</button>
-        <p id="status"></p>
+        <a href="split.html" class="tool-card">
+            <div class="icon-container c-split">
+                <i data-lucide="scissors"></i>
+            </div>
+            <div class="content">
+                <h3>Split PDF</h3>
+                <p>Extract specific pages into a new file.</p>
+            </div>
+        </a>
     </div>
 
     <script>
         lucide.createIcons();
-        let currentTool = '';
-
-        function openTool(tool) {
-            currentTool = tool;
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('main-title').style.display = 'none';
-            document.getElementById('tool-section').style.display = 'block';
-            document.getElementById('back-link').style.display = 'block';
-            document.getElementById('tool-name').innerText = tool.toUpperCase() + " PDF";
-        }
-
-        function showHome() {
-            document.getElementById('dashboard').style.display = 'grid';
-            document.getElementById('main-title').style.display = 'block';
-            document.getElementById('tool-section').style.display = 'none';
-            document.getElementById('back-link').style.display = 'none';
-        }
-
-        async function processPDF() {
-            const files = document.getElementById('pdf-input').files;
-            if (files.length === 0) return alert("Select a file first!");
-            
-            const { PDFDocument, degrees } = PDFLib;
-            let finalPdf;
-
-            if (currentTool === 'merge') {
-                finalPdf = await PDFDocument.create();
-                for (let f of files) {
-                    const donorPdf = await PDFDocument.load(await f.arrayBuffer());
-                    const pages = await finalPdf.copyPages(donorPdf, donorPdf.getPageIndices());
-                    pages.forEach(p => finalPdf.addPage(p));
-                }
-            } else if (currentTool === 'rotate') {
-                finalPdf = await PDFDocument.load(await files[0].arrayBuffer());
-                const pages = finalPdf.getPages();
-                pages.forEach(p => p.setRotation(degrees(90)));
-            } else if (currentTool === 'split') {
-                const source = await PDFDocument.load(await files[0].arrayBuffer());
-                finalPdf = await PDFDocument.create();
-                const [firstPage] = await finalPdf.copyPages(source, [0]);
-                finalPdf.addPage(firstPage);
-            } else {
-                alert("Compression requires server-side logic, but Merge/Split/Rotate work here!");
-                return;
-            }
-
-            const pdfBytes = await finalPdf.save();
-            const blob = new Blob([pdfBytes], { type: "application/pdf" });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `result_${currentTool}.pdf`;
-            link.click();
-        }
     </script>
 </body>
 </html>
