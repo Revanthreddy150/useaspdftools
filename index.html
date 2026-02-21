@@ -1,164 +1,129 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Tools Hub | All-in-One PDF Editor</title>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        :root {
-            --primary: #6366f1;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --title: #1e293b;
-            --text: #64748b;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Tools Hub</title>
 
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+<style>
+body{
+  font-family: Arial;
+  margin:0;
+  background:#f3f3f8;
+  text-align:center;
+}
 
-        header {
-            text-align: center;
-            margin-bottom: 60px;
-            max-width: 600px;
-        }
+.header{
+  padding:20px;
+  font-size:22px;
+  font-weight:bold;
+}
 
-        header h1 {
-            color: var(--title);
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 12px;
-            letter-spacing: -0.025em;
-        }
+.container{
+  padding:20px;
+}
 
-        header p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
+.card{
+  background:white;
+  padding:30px;
+  border-radius:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
 
-        .tool-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px;
-            width: 100%;
-            max-width: 1100px;
-        }
+button{
+  background:#5b5be0;
+  color:white;
+  border:none;
+  padding:12px 20px;
+  margin:10px;
+  border-radius:8px;
+  font-size:16px;
+  cursor:pointer;
+}
 
-        .tool-card {
-            background: var(--card-bg);
-            padding: 32px;
-            border-radius: 24px;
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            align-items: flex-start;
-            gap: 20px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(0,0,0,0.03);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
+button:hover{
+  opacity:0.8;
+}
 
-        .tool-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow);
-            border-color: var(--primary);
-        }
-
-        .icon-container {
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            color: white;
-        }
-
-        /* Tool Specific Colors */
-        .c-compress { background: linear-gradient(135deg, #34d399, #10b981); }
-        .c-merge    { background: linear-gradient(135deg, #818cf8, #6366f1); }
-        .c-rotate   { background: linear-gradient(135deg, #fb7185, #f43f5e); }
-        .c-split    { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
-
-        .content h3 {
-            margin: 0 0 8px 0;
-            color: var(--title);
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-
-        .content p {
-            margin: 0;
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-
-        @media (max-width: 640px) {
-            .tool-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+.back{
+  text-align:left;
+  margin-bottom:20px;
+  cursor:pointer;
+  color:#5b5be0;
+  font-weight:bold;
+}
+.hidden{
+  display:none;
+}
+</style>
 </head>
+
 <body>
 
-    <header>
-        <h1>Manage Your PDF Documents</h1>
-        <p>Professional-grade PDF tools to help you edit, merge, and organize your files effortlessly in your browser.</p>
-    </header>
+<div class="header">PDF Tools Hub</div>
 
-    <div class="tool-grid">
-        <a href="compress.html" class="tool-card">
-            <div class="icon-container c-compress">
-                <i data-lucide="minimize-2"></i>
-            </div>
-            <div class="content">
-                <h3>Compress PDF</h3>
-                <p>Reduce file size while keeping high quality.</p>
-            </div>
-        </a>
+<div class="container">
 
-        <a href="merge.html" class="tool-card">
-            <div class="icon-container c-merge">
-                <i data-lucide="layers"></i>
-            </div>
-            <div class="content">
-                <h3>Merge PDF</h3>
-                <p>Combine multiple files into one document.</p>
-            </div>
-        </a>
+<!-- DASHBOARD -->
+<div id="dashboard" class="card">
 
-        <a href="rotate.html" class="tool-card">
-            <div class="icon-container c-rotate">
-                <i data-lucide="refresh-cw"></i>
-            </div>
-            <div class="content">
-                <h3>Rotate PDF</h3>
-                <p>Flip pages to the correct orientation.</p>
-            </div>
-        </a>
+<h2>Select Tool</h2>
 
-        <a href="split.html" class="tool-card">
-            <div class="icon-container c-split">
-                <i data-lucide="scissors"></i>
-            </div>
-            <div class="content">
-                <h3>Split PDF</h3>
-                <p>Extract specific pages into a new file.</p>
-            </div>
-        </a>
-    </div>
+<button onclick="openPage('compress')">Compress PDF</button>
+<button onclick="openPage('merge')">Merge PDF</button>
+<button onclick="openPage('rotate')">Rotate PDF</button>
+<button onclick="openPage('split')">Split PDF</button>
 
-    <script>
-        lucide.createIcons();
-    </script>
+</div>
+
+<!-- COMPRESS -->
+<div id="compress" class="card hidden">
+<div class="back" onclick="goBack()">← Back to Dashboard</div>
+<h2>Compress PDF</h2>
+<input type="file"><br><br>
+<button>Run Action</button>
+</div>
+
+<!-- MERGE -->
+<div id="merge" class="card hidden">
+<div class="back" onclick="goBack()">← Back to Dashboard</div>
+<h2>Merge PDF</h2>
+<input type="file" multiple><br><br>
+<button>Run Action</button>
+</div>
+
+<!-- ROTATE -->
+<div id="rotate" class="card hidden">
+<div class="back" onclick="goBack()">← Back to Dashboard</div>
+<h2>Rotate PDF</h2>
+<input type="file"><br><br>
+<button>Run Action</button>
+</div>
+
+<!-- SPLIT -->
+<div id="split" class="card hidden">
+<div class="back" onclick="goBack()">← Back to Dashboard</div>
+<h2>Split PDF</h2>
+<input type="file"><br><br>
+<button>Run Action</button>
+</div>
+
+</div>
+
+<script>
+function openPage(page){
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById(page).classList.remove("hidden");
+}
+
+function goBack(){
+  document.getElementById("dashboard").classList.remove("hidden");
+  document.getElementById("compress").classList.add("hidden");
+  document.getElementById("merge").classList.add("hidden");
+  document.getElementById("rotate").classList.add("hidden");
+  document.getElementById("split").classList.add("hidden");
+}
+</script>
+
 </body>
 </html>
