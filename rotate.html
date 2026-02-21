@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotate PDF - useas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        
+        .page-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .pdf-thumb {
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .rotate-90 { transform: rotate(90deg); }
+        .rotate-180 { transform: rotate(180deg); }
+        .rotate-270 { transform: rotate(270deg); }
+        .rotate-0 { transform: rotate(0deg); }
+
+        #editor-view { display: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 h-16 flex items-center justify-between px-6 sticky top-0 z-50">
+        <div class="flex items-center gap-3 cursor-pointer group" onclick="location.reload()">
+            <i data-lucide="arrow-left" class="w-6 h-6 text-slate-400 group-hover:text-indigo-600"></i>
+            <div class="flex items-center gap-2">
+                <div class="bg-indigo-600 p-1.5 rounded-lg"><i data-lucide="rotate-cw" class="text-white w-4 h-4"></i></div>
+                <span class="text-xl font-extrabold tracking-tight">useas</span>
+            </div>
+        </div>
+        <button id="download-btn" onclick="saveRotatedPDF()" class="hidden bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold text-sm shadow-lg hover:bg-indigo-700 transition-all">Download PDF</button>
+    </nav>
+
+    <main class="flex-grow flex flex-col items-center p-4 md:p-8">
+        
+        <div id="upload-view" class="w-full max-w-2xl text-center py-20">
+            <h1 class="text-4xl font-black mb-4">Rotate PDF</h1>
+            <p class="text-slate-500 mb-10 text-lg">Rotate individual pages or the entire document.</p>
+            <input type="file" id="pdf-input" class="hidden" accept="application/pdf" onchange="initRotationEditor(event)">
+            <label for="pdf-input" class="bg-white border-2 border-dashed border-slate-300 rounded-[2.5rem] p-16 hover:border-indigo-500 transition-all cursor-pointer shadow-xl flex flex-col items-center group">
+                <div class="bg-indigo-600 text-white p-5 rounded-2xl mb-6 group-hover:scale-105 transition-transform"><i data-lucide="refresh-cw" class="w-8 h-8"></i></div>
+                <span class="text-2xl font-bold">Select PDF</span>
+            </label>
+        </div>
+
+        <div id="editor-view" class="w-full max-w-6xl">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <div class="text-center md:text-left">
+                    <h2 class="text-2xl font-black" id="file-name">Document.pdf</h2>
+                    <p class="text-slate-400 text-sm font-bold uppercase tracking-widest" id="page-count">0 Pages</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="rotateAll(90)" class="bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-50 flex items-center gap-2">
+                        <i data-lucide="rotate-cw" class="w-4 h-4 text-indigo-600"></i> Rotate All
+                    </button>
+                    <button onclick="resetAll()" class="bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-50 flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-slate-400"></i> Reset
+                    </button>
+                </div>
+            </div>
+
+            <div id="pages-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                </div>
+        </div>
+    </main>
+
+    <script>
+        let pdfBytes = null;
+        let pageRotations = []; // Stores degrees: 0, 90, 180, 270
+        const pdfjs = window['pdfjs-dist/build/pdf'];
+        pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        async function initRotationEditor(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            pdfBytes = await file.arrayBuffer();
+
+            document.getElementById('upload-view').style.display = 'none';
+            document.getElementById('editor-view').style.display = 'block';
+            document.getElementById('download-btn').classList.remove('hidden');
+            document.getElementById('file-name').innerText = file.name;
+
+            const pdf = await pdfjs.getDocument({ data: pdfBytes.slice(0) }).promise;
+            const container = document.getElementById('pages-grid');
+            document.getElementById('page-count').innerText = `${pdf.numPages} Pages`;
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 0.5 });
+                
+                // Track rotation state
+                pageRotations.push(0);
+
+                const card = document.createElement('div');
+                card.className = "page-card bg-white p-4 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md flex flex-col items-center";
+                
+                const thumbContainer = document.createElement('div');
+                thumbContainer.className = "relative mb-4 flex items-center justify-center w-full aspect-[3/4] overflow-hidden rounded-lg bg-slate-50";
+                
+                const canvas = document.createElement('canvas');
+                canvas.id = `thumb-${i-1}`;
+                canvas.className = "pdf-thumb max-w-full max-h-full rotate-0";
+                
+                thumbContainer.appendChild(canvas);
+                
+                const controls = document.createElement('div');
+                controls.className = "flex items-center justify-between w-full mt-2";
+                
+                const pageNum = document.createElement('span');
+                pageNum.className = "text-[10px] font-black text-slate-300 uppercase tracking-widest";
+                pageNum.innerText = `PAGE ${i}`;
+
+                const rotateBtn = document.createElement('button');
+                rotateBtn.className = "bg-indigo-50 text-indigo-600 p-2 rounded-full hover:bg-indigo-600 hover:text-white transition-colors";
+                rotateBtn.innerHTML = '<i data-lucide="rotate-cw" class="w-4 h-4"></i>';
+                rotateBtn.onclick = () => rotateSingle(i - 1);
+
+                controls.appendChild(pageNum);
+                controls.appendChild(rotateBtn);
+                
+                card.appendChild(thumbContainer);
+                card.appendChild(controls);
+                container.appendChild(card);
+
+                const ctx = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                await page.render({ canvasContext: ctx, viewport }).promise;
+            }
+            lucide.createIcons();
+        }
+
+        function rotateSingle(index) {
+            pageRotations[index] = (pageRotations[index] + 90) % 360;
+            const canvas = document.getElementById(`thumb-${index}`);
+            canvas.className = `pdf-thumb max-w-full max-h-full rotate-${pageRotations[index]}`;
+        }
+
+        function rotateAll(deg) {
+            pageRotations = pageRotations.map((r, i) => {
+                const newRot = (r + deg) % 360;
+                document.getElementById(`thumb-${i}`).className = `pdf-thumb max-w-full max-h-full rotate-${newRot}`;
+                return newRot;
+            });
+        }
+
+        function resetAll() {
+            pageRotations = pageRotations.map((r, i) => {
+                document.getElementById(`thumb-${i}`).className = `pdf-thumb max-w-full max-h-full rotate-0`;
+                return 0;
+            });
+        }
+
+        async function saveRotatedPDF() {
+            const { PDFDocument, degrees } = PDFLib;
+            const pdfDoc = await PDFDocument.load(pdfBytes);
+            const pages = pdfDoc.getPages();
+
+            pages.forEach((page, i) => {
+                const currentRotation = page.getRotation().angle;
+                page.setRotation(degrees(currentRotation + pageRotations[i]));
+            });
+
+            const savedBytes = await pdfDoc.save();
+            const blob = new Blob([savedBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = "rotated_useas.pdf";
+            link.click();
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
