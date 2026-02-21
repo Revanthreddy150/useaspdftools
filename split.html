@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split PDF - useas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; overflow-x: hidden; }
+        
+        .float-container { display: flex; gap: 12px; height: 60px; align-items: center; }
+        .float-letter {
+            font-size: 3.5rem; font-weight: 900; color: #2563eb;
+            opacity: 0; animation: floatUp 2s infinite;
+        }
+        .float-letter:nth-child(1) { animation-delay: 0.0s; }
+        .float-letter:nth-child(2) { animation-delay: 0.2s; }
+        .float-letter:nth-child(3) { animation-delay: 0.4s; }
+        .float-letter:nth-child(4) { animation-delay: 0.6s; }
+        .float-letter:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            20% { opacity: 1; transform: translateY(0px); }
+            40% { opacity: 0; transform: translateY(-30px); }
+            100% { opacity: 0; }
+        }
+
+        .page-card { transition: all 0.2s ease; cursor: pointer; border: 2px solid transparent; position: relative; }
+        .page-card.selected { border-color: #2563eb; background: #eff6ff; }
+        .selected-icon { opacity: 0; transform: scale(0.5); transition: 0.2s; }
+        .selected .selected-icon { opacity: 1; transform: scale(1); }
+        
+        .pdf-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .reveal { animation: slideUp 0.5s ease-out forwards; opacity: 0; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        #progress-fill { transition: width 0.4s ease; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 h-16 flex items-center px-6 sticky top-0 z-50">
+        <div class="flex items-center gap-3 cursor-pointer group" onclick="location.reload()">
+            <i data-lucide="arrow-left" class="w-6 h-6 text-slate-400 group-hover:text-blue-600"></i>
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 p-1.5 rounded-lg"><i data-lucide="scissors" class="text-white w-4 h-4"></i></div>
+                <span class="text-xl font-extrabold tracking-tight">useas</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex flex-col items-center">
+        
+        <div id="upload-view" class="w-full max-w-2xl px-6 py-24 text-center">
+            <h1 class="text-4xl font-black mb-4">Split PDF</h1>
+            <p class="text-slate-500 mb-10 text-lg">Fast, local, and secure page extraction.</p>
+            <input type="file" id="pdf-input" class="hidden" accept="application/pdf" onchange="loadForSelection(event)">
+            <label for="pdf-input" class="bg-white border-2 border-dashed border-slate-300 rounded-[2.5rem] p-16 md:p-24 hover:border-blue-500 transition-all cursor-pointer shadow-xl flex flex-col items-center group">
+                <div class="bg-blue-600 text-white p-5 rounded-2xl mb-6 shadow-lg group-hover:scale-105 transition-transform">
+                    <i data-lucide="plus" class="w-8 h-8"></i>
+                </div>
+                <span class="text-2xl font-bold">Choose PDF file</span>
+            </label>
+        </div>
+
+        <div id="selection-view" class="hidden w-full max-w-6xl px-6 py-10">
+            <div class="flex justify-between items-end mb-8">
+                <h2 class="text-2xl font-black">Select Pages</h2>
+                <div class="flex gap-2">
+                    <button onclick="toggleAll(true)" class="px-4 py-2 text-[10px] font-bold border border-slate-200 rounded-lg bg-white uppercase">Select All</button>
+                    <button onclick="toggleAll(false)" class="px-4 py-2 text-[10px] font-bold border border-slate-200 rounded-lg bg-white uppercase">Clear</button>
+                </div>
+            </div>
+            <div id="pages-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
+            <div class="h-32"></div>
+            <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-5 z-40">
+                <div class="max-w-4xl mx-auto flex items-center justify-between">
+                    <span id="counter" class="font-bold text-slate-400 uppercase text-xs tracking-widest">0 selected</span>
+                    <button id="split-btn" onclick="processSplit()" disabled class="bg-blue-600 disabled:bg-slate-100 text-white px-10 py-4 rounded-2xl font-extrabold shadow-lg">Create PDF</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="loading-view" class="hidden fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
+            <div class="float-container mb-4">
+                <span class="float-letter">u</span><span class="float-letter">s</span><span class="float-letter">e</span><span class="float-letter">a</span><span class="float-letter">s</span>
+            </div>
+            <div class="w-48 h-1.5 bg-slate-100 rounded-full overflow-hidden mb-3">
+                <div id="progress-fill" class="h-full bg-blue-600 w-0"></div>
+            </div>
+            <p id="progress-text" class="font-black text-blue-600 text-xl">0%</p>
+            <p class="font-bold text-slate-300 uppercase tracking-[0.3em] text-[9px] mt-2">Generating Document</p>
+        </div>
+
+        <div id="preview-view" class="hidden w-full flex flex-col items-center">
+            <div class="w-full max-w-4xl p-6 md:p-10 space-y-10" id="final-pages-container"></div>
+            <div class="h-40"></div>
+            <div class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-200 p-5 z-50">
+                <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-green-100 text-green-600 p-2 rounded-full"><i data-lucide="check" class="w-5 h-5"></i></div>
+                        <div><p class="text-sm font-bold">Extraction Ready</p><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">HD PDF Document</p></div>
+                    </div>
+                    <a id="dl-link" href="#" download="split_useas.pdf" class="w-full md:w-auto bg-blue-600 text-white px-12 py-4 rounded-2xl font-extrabold text-lg flex items-center justify-center gap-3 shadow-xl">
+                        Download PDF <i data-lucide="download"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let selectedIndices = new Set();
+        let originalBytes = null;
+        const pdfjs = window['pdfjs-dist/build/pdf'];
+        pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        async function loadForSelection(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            originalBytes = await file.arrayBuffer();
+            document.getElementById('upload-view').classList.add('hidden');
+            const grid = document.getElementById('pages-grid');
+            grid.innerHTML = '';
+            const pdf = await pdfjs.getDocument({ data: originalBytes.slice(0) }).promise;
+            document.getElementById('selection-view').classList.remove('hidden');
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 0.3 });
+                const card = document.createElement('div');
+                card.className = "page-card bg-white p-3 rounded-2xl shadow-sm border border-slate-100";
+                card.onclick = () => {
+                    if (selectedIndices.has(i-1)) selectedIndices.delete(i-1);
+                    else selectedIndices.add(i-1);
+                    card.classList.toggle('selected');
+                    updateUI();
+                };
+                const canvas = document.createElement('canvas');
+                canvas.className = "w-full h-auto rounded-lg mb-2";
+                const ctx = canvas.getContext('2d');
+                canvas.height = viewport.height; canvas.width = viewport.width;
+                await page.render({ canvasContext: ctx, viewport }).promise;
+                card.innerHTML = `<div class="flex justify-between mb-2 items-center"><span class="text-[10px] font-black text-slate-400">PAGE ${i}</span><div class="selected-icon w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center"><i data-lucide="check" class="w-2.5 h-2.5"></i></div></div>`;
+                card.appendChild(canvas);
+                grid.appendChild(card);
+            }
+            lucide.createIcons();
+        }
+
+        function toggleAll(sel) {
+            const cards = document.querySelectorAll('.page-card');
+            selectedIndices.clear();
+            cards.forEach((c, i) => { if(sel){ selectedIndices.add(i); c.classList.add('selected'); } else { c.classList.remove('selected'); } });
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('counter').innerText = `${selectedIndices.size} selected`;
+            document.getElementById('split-btn').disabled = selectedIndices.size === 0;
+            lucide.createIcons();
+        }
+
+        async function processSplit() {
+            document.getElementById('selection-view').classList.add('hidden');
+            document.getElementById('loading-view').classList.remove('hidden');
+            
+            const progFill = document.getElementById('progress-fill');
+            const progText = document.getElementById('progress-text');
+
+            try {
+                const src = await PDFLib.PDFDocument.load(originalBytes);
+                const out = await PDFLib.PDFDocument.create();
+                const sorted = Array.from(selectedIndices).sort((a,b) => a-b);
+                
+                for (let i = 0; i < sorted.length; i++) {
+                    const [page] = await out.copyPages(src, [sorted[i]]);
+                    out.addPage(page);
+                    let p = Math.floor(((i + 1) / sorted.length) * 50);
+                    progFill.style.width = p + '%';
+                    progText.innerText = p + '%';
+                    await new Promise(r => setTimeout(r, 10));
+                }
+
+                const bytes = await out.save();
+                const url = URL.createObjectURL(new Blob([bytes], {type: 'application/pdf'}));
+                document.getElementById('dl-link').href = url;
+
+                const finalPdf = await pdfjs.getDocument({ data: bytes }).promise;
+                const container = document.getElementById('final-pages-container');
+                container.innerHTML = '';
+
+                for (let i = 1; i <= finalPdf.numPages; i++) {
+                    const page = await finalPdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.2 });
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "reveal flex flex-col items-center w-full";
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.className = "pdf-shadow bg-white w-full rounded-xl mb-4";
+                    const ctx = canvas.getContext('2d');
+                    canvas.height = viewport.height; 
+                    canvas.width = viewport.width;
+                    
+                    const label = document.createElement('span');
+                    label.className = "text-[10px] font-black text-slate-400 uppercase tracking-widest mb-10";
+                    label.innerText = `PAGE ${i} OF ${finalPdf.numPages}`;
+
+                    wrapper.appendChild(canvas);
+                    wrapper.appendChild(label);
+                    container.appendChild(wrapper);
+
+                    // Render content after appending to DOM
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+
+                    let p = 50 + Math.floor((i / finalPdf.numPages) * 50);
+                    progFill.style.width = p + '%';
+                    progText.innerText = p + '%';
+                }
+
+                setTimeout(() => {
+                    document.getElementById('loading-view').classList.add('hidden');
+                    document.getElementById('preview-view').classList.remove('hidden');
+                    lucide.createIcons();
+                }, 500);
+
+            } catch (e) {
+                console.error(e);
+                alert("Processing failed. Please try a different PDF.");
+                location.reload();
+            }
+        }
+        lucide.createIcons();
+    </script>
+</body>
+</html>
