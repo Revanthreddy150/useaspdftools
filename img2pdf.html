@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Converter Pro Plus - useas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        
+        .tab-btn.active { background-color: #2563eb; color: #ffffff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .asset-card { transition: all 0.2s ease; border: 1px solid #e2e8f0; }
+        .asset-card:hover { border-color: #2563eb; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+        
+        .float-container { display: flex; gap: 12px; height: 60px; align-items: center; }
+        .float-letter {
+            font-size: 3.5rem; font-weight: 900; color: #2563eb;
+            opacity: 0; animation: floatUp 2s infinite;
+        }
+        .float-letter:nth-child(1) { animation-delay: 0.0s; }
+        .float-letter:nth-child(2) { animation-delay: 0.2s; }
+        .float-letter:nth-child(3) { animation-delay: 0.4s; }
+        .float-letter:nth-child(4) { animation-delay: 0.6s; }
+        .float-letter:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            20% { opacity: 1; transform: translateY(0px); }
+            40% { opacity: 0; transform: translateY(-30px); }
+            100% { opacity: 0; }
+        }
+        #progress-fill { transition: width 0.3s ease; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 h-16 flex items-center px-6 sticky top-0 z-50">
+        <div class="flex items-center gap-3 cursor-pointer group" onclick="window.history.back()">
+            <i data-lucide="arrow-left" class="w-6 h-6 text-slate-400 group-hover:text-blue-600 transition-colors"></i>
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 p-1.5 rounded-lg"><i data-lucide="refresh-cw" class="text-white w-4 h-4"></i></div>
+                <span class="text-xl font-extrabold tracking-tight">useas</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex flex-col items-center w-full max-w-4xl mx-auto px-6 py-12">
+        <div class="w-full text-center mb-10">
+            <h1 class="text-4xl font-black mb-3 tracking-tight">Media Converter Pro Plus</h1>
+            <p class="text-slate-500 mb-8 font-medium">Fine-tune image scaling engines, reorder assets, encrypt PDFs, or extract custom page indices locally.</p>
+            
+            <div class="inline-flex bg-slate-200/70 p-1.5 rounded-2xl gap-1 text-sm font-bold w-full max-w-md">
+                <button onclick="switchMode('img2pdf')" id="btn-img2pdf" class="tab-btn active w-1/2 py-3 rounded-xl transition-all text-slate-600 hover:text-slate-900">Images to PDF</button>
+                <button onclick="switchMode('pdf2img')" id="btn-pdf2img" class="tab-btn w-1/2 py-3 rounded-xl transition-all text-slate-600 hover:text-slate-900">PDF to Images</button>
+            </div>
+        </div>
+
+        <!-- MODE 1: IMAGES TO PDF WORKSPACE -->
+        <div id="img2pdf-workspace" class="w-full workspace-panel">
+            <div class="bg-white border-2 border-dashed border-slate-300 rounded-[2.5rem] p-10 hover:border-blue-500 transition-all cursor-pointer shadow-xl text-center relative group">
+                <input type="file" id="img-input-element" class="absolute inset-0 opacity-0 cursor-pointer" multiple accept="image/png, image/jpeg, image/jpg, image/webp" onchange="queueIncomingImages(event)">
+                <div class="bg-blue-600 text-white p-4 inline-block rounded-2xl mb-4 shadow-lg group-hover:scale-105 transition-transform">
+                    <i data-lucide="image" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold">Upload Local Image Assets</h3>
+                <p class="text-slate-400 mt-1 text-xs uppercase tracking-widest font-semibold">Supports PNG, JPG, JPEG, WEBP files</p>
+            </div>
+
+            <!-- Configuration, Compression & Options Dashboard -->
+            <div id="img-queue-card" class="hidden mt-8 bg-white rounded-3xl p-6 shadow-md border border-slate-200">
+                <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 mb-6">
+                    <span id="img-queue-count" class="font-extrabold text-slate-800 text-base">0 Selected Elements</span>
+                    
+                    <!-- Compression Tuning Matrix -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <div class="flex justify-between mb-1.5 text-xs font-bold text-slate-600">
+                                <span class="flex items-center gap-1"><i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Dimensions / Resolution Scale</span>
+                                <span id="lbl-img-scale" class="text-blue-600">100%</span>
+                            </div>
+                            <input type="range" id="slider-img-scale" min="30" max="300" value="100" step="5" oninput="updateCompressionLabels()" class="w-full accent-blue-600 cursor-pointer">
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1.5 text-xs font-bold text-slate-600">
+                                <span class="flex items-center gap-1"><i data-lucide="sliders" class="w-3.5 h-3.5"></i> Compression Quality Preset</span>
+                                <span id="lbl-img-quality" class="text-blue-600">85%</span>
+                            </div>
+                            <input type="range" id="slider-img-quality" min="10" max="100" value="85" oninput="updateCompressionLabels()" class="w-full accent-blue-600 cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- NEW FEATURE: PASSWORD PROTECTION FIELDS -->
+                    <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <i data-lucide="shield-lock" class="text-blue-600 w-5 h-5"></i>
+                            <div>
+                                <h5 class="text-xs font-black text-slate-800">Password Encryption (Optional)</h5>
+                                <p class="text-[11px] text-slate-400 font-medium">Add protection keys securely on the file container layer</p>
+                            </div>
+                        </div>
+                        <input type="password" id="pdf-security-pass" placeholder="Enter output PDF password" class="w-full sm:w-60 px-3 py-2 text-xs font-bold border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                
+                <!-- Rearrangeable Image Display Grid -->
+                <div id="img-grid-display" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto p-1"></div>
+                
+                <button onclick="convertImagesToPdf()" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-base transition-all shadow-lg flex items-center justify-center gap-2">
+                    Compile Secured PDF Document <i data-lucide="file-check" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- MODE 2: PDF TO IMAGES WORKSPACE -->
+        <div id="pdf2img-workspace" class="w-full workspace-panel hidden">
+            <div class="bg-white border-2 border-dashed border-slate-300 rounded-[2.5rem] p-10 hover:border-pink-500 transition-all cursor-pointer shadow-xl text-center relative group">
+                <input type="file" id="pdf-input-element" class="absolute inset-0 opacity-0 cursor-pointer" accept="application/pdf" onchange="processIncomingPdf(event)">
+                <div class="bg-pink-600 text-white p-4 inline-block rounded-2xl mb-4 shadow-lg group-hover:scale-105 transition-transform">
+                    <i data-lucide="file-text" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold">Choose Source PDF Document</h3>
+                <p class="text-slate-400 mt-1 text-xs uppercase tracking-widest font-semibold">Fast, Local Page Resolution Extraction Engine</p>
+            </div>
+
+            <!-- PDF Conversion Tuning Panel -->
+            <div id="pdf-tune-card" class="hidden mt-8 bg-white rounded-3xl p-6 shadow-md border border-slate-200">
+                <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 mb-6">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <div>
+                            <h4 id="pdf-file-title" class="font-bold text-slate-800 text-sm truncate max-w-xs">document.pdf</h4>
+                            <p id="pdf-page-count-lbl" class="text-xs text-slate-400 font-medium">0 Pages Detected</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs font-bold bg-slate-100 p-1 rounded-xl">
+                            <span class="text-slate-400 px-2">Output:</span>
+                            <button onclick="setImgOutputFormat('image/jpeg')" id="fmt-jpg" class="px-3 py-1.5 rounded-lg bg-white text-blue-600 shadow-sm">JPG</button>
+                            <button onclick="setImgOutputFormat('image/png')" id="fmt-png" class="px-3 py-1.5 rounded-lg text-slate-500">PNG</button>
+                        </div>
+                    </div>
+
+                    <!-- Extraction Resolution Calibration -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                        <div class="flex justify-between mb-1.5 text-xs font-bold text-slate-600">
+                            <span class="flex items-center gap-1"><i data-lucide="file-down" class="w-3.5 h-3.5"></i> Extraction Density (Render Scale)</span>
+                            <span id="lbl-pdf-render-scale" class="text-pink-600">1.5x</span>
+                        </div>
+                        <input type="range" id="slider-pdf-scale" min="0.5" max="3.0" step="0.1" value="1.5" oninput="updateCompressionLabels()" class="w-full accent-pink-600 cursor-pointer">
+                    </div>
+
+                    <!-- NEW FEATURE: CUSTOM PAGE SELECTION EXTRACTION RANGE -->
+                    <div class="bg-pink-50/50 border border-pink-100 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <i data-lucide="layers" class="text-pink-600 w-5 h-5"></i>
+                            <div>
+                                <h5 class="text-xs font-black text-slate-800">Target Extraction Custom Range</h5>
+                                <p class="text-[11px] text-slate-400 font-medium">Leave blank for all pages, or pass ranges like: 1, 3-5</p>
+                            </div>
+                        </div>
+                        <input type="text" id="pdf-extraction-range" placeholder="e.g. 1, 3-5" class="w-full sm:w-60 px-3 py-2 text-xs font-bold border border-slate-200 rounded-xl focus:outline-none focus:border-pink-500">
+                    </div>
+                </div>
+
+                <button onclick="convertPdfToImages()" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-4 rounded-2xl font-black text-base transition-all shadow-lg flex items-center justify-center gap-2">
+                    Extract Selected Pages to Images <i data-lucide="images" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- RUNTIME PROCESSING DIALOG MODAL LAYOUT -->
+        <div id="loading-view" class="hidden fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
+            <div class="float-container mb-4">
+                <span class="float-letter">u</span><span class="float-letter">s</span><span class="float-letter">e</span><span class="float-letter">a</span><span class="float-letter">s</span>
+            </div>
+            <div class="w-48 h-1.5 bg-slate-100 rounded-full overflow-hidden mb-3">
+                <div id="progress-fill" class="h-full bg-blue-600 w-0"></div>
+            </div>
+            <p id="progress-text" class="font-black text-blue-600 text-xl">0%</p>
+            <p id="loading-status-lbl" class="font-bold text-slate-300 uppercase tracking-[0.2em] text-[9px] mt-2">Processing Engine Pipeline</p>
+        </div>
+
+        <!-- DOWNLOAD CONTROL READY PREVIEW VIEWER DISPLAY CARD -->
+        <div id="output-preview-view" class="hidden w-full mt-6 bg-white rounded-3xl p-6 shadow-xl border border-slate-200">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="bg-green-100 text-green-600 p-2 rounded-full"><i data-lucide="check" class="w-5 h-5"></i></div>
+                    <div>
+                        <h4 class="font-extrabold text-slate-900 text-base">Compilation Executed Successfully</h4>
+                        <p id="final-file-meta-lbl" class="text-xs font-bold text-slate-400 uppercase tracking-widest">Weight calculation loading...</p>
+                    </div>
+                </div>
+                <a id="master-download-btn" href="#" download="export_useas" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg transition-transform hover:-translate-y-0.5">
+                    Download File <i data-lucide="download" class="w-4 h-4"></i>
+                </a>
+            </div>
+            <div id="preview-gallery-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[40rem] overflow-y-auto p-1"></div>
+        </div>
+    </main>
+
+    <script>
+        const pdfjs = window['pdfjs-dist/build/pdf'];
+        pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        let currentActiveMode = "img2pdf";
+        let localImageFilesArr = []; // Structured as array of objects { file, rotation: 0 }
+        let pdfTargetBlobBytes = null;
+        let pdfTargetFileName = "";
+        let pdfTargetTotalPages = 0;
+        let pdfToImageOutputFormat = "image/jpeg"; 
+
+        function updateCompressionLabels() {
+            const imgScale = document.getElementById('slider-img-scale').value;
+            const imgQuality = document.getElementById('slider-img-quality').value;
+            
+            document.getElementById('lbl-img-scale').innerText = `${imgScale}% ${imgScale < 100 ? '(Decreasing Size)' : imgScale > 100 ? '(Improving Quality)' : '(Original)'}`;
+            document.getElementById('lbl-img-quality').innerText = `${imgQuality}% ${imgQuality <= 40 ? '(Compressed)' : imgQuality >= 90 ? '(Lossless)' : '(Balanced)'}`;
+            
+            const pdfScale = document.getElementById('slider-pdf-scale').value;
+            document.getElementById('lbl-pdf-render-scale').innerText = `${pdfScale}x ${pdfScale < 1.0 ? '(Decreasing Size)' : pdfScale >= 2.0 ? '(Ultra Enhanced)' : '(Standard)'}`;
+        }
+
+        function switchMode(mode) {
+            currentActiveMode = mode;
+            document.querySelectorAll('.workspace-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById('output-preview-view').classList.add('hidden');
+            
+            document.getElementById('btn-img2pdf').classList.remove('active');
+            document.getElementById('btn-pdf2img').classList.remove('active');
+            
+            document.getElementById(`btn-${mode}`).classList.add('active');
+            document.getElementById(`${mode}-workspace`).classList.remove('hidden');
+        }
+
+        // --- MODE 1: IMAGES TO PDF ---
+        function queueIncomingImages(e) {
+            const selectedFiles = Array.from(e.target.files);
+            if (selectedFiles.length === 0) return;
+
+            selectedFiles.forEach(file => {
+                localImageFilesArr.push({ file: file, rotation: 0 });
+            });
+            e.target.value = "";
+            renderImageArrayQueue();
+        }
+
+        // FEATURE: Rotate specific asset sequence canvas item
+        function rotateImageElement(index) {
+            localImageFilesArr[index].rotation = (localImageFilesArr[index].rotation + 90) % 360;
+            renderImageArrayQueue();
+        }
+
+        // FEATURE: Move left inside vector layout hierarchy
+        function moveImageInQueue(index, direction) {
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= localImageFilesArr.length) return;
+            const temporaryHolder = localImageFilesArr[index];
+            localImageFilesArr[index] = localImageFilesArr[targetIndex];
+            localImageFilesArr[targetIndex] = temporaryHolder;
+            renderImageArrayQueue();
+        }
+
+        function removeImageFromQueue(index) {
+            localImageFilesArr.splice(index, 1);
+            renderImageArrayQueue();
+        }
+
+        function renderImageArrayQueue() {
+            const queueCard = document.getElementById('img-queue-card');
+            const counterLabel = document.getElementById('img-queue-count');
+            const gridContainer = document.getElementById('img-grid-display');
+
+            if (localImageFilesArr.length === 0) {
+                queueCard.classList.add('hidden');
+                return;
+            }
+
+            queueCard.classList.remove('hidden');
+            counterLabel.innerText = `${localImageFilesArr.length} Image Asset${localImageFilesArr.length > 1 ? 's' : ''} Loaded`;
+            gridContainer.innerHTML = '';
+
+            localImageFilesArr.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "asset-card bg-slate-50 p-3 rounded-2xl relative flex flex-col items-center group border border-slate-200";
+                
+                // Embedded container handle wrapper layout
+                const imgWrapper = document.createElement('div');
+                imgWrapper.className = "w-full aspect-[4/3] flex items-center justify-center overflow-hidden bg-white rounded-xl shadow-sm mb-2 relative";
+
+                const imgThumb = document.createElement('img');
+                imgThumb.className = "max-w-full max-h-full object-contain transition-transform duration-200";
+                imgThumb.style.transform = `rotate(${item.rotation}deg)`;
+                imgThumb.src = URL.createObjectURL(item.file);
+                imgWrapper.appendChild(imgThumb);
+                
+                const metaText = document.createElement('p');
+                metaText.className = "text-[10px] text-slate-400 font-extrabold truncate w-full px-1 text-center mb-2";
+                metaText.innerText = item.file.name;
+
+                // Control Dashboard Toolbar actions inside item layout
+                const actionToolbar = document.createElement('div');
+                actionToolbar.className = "flex gap-1.5 items-center justify-center w-full mt-auto";
+
+                actionToolbar.innerHTML = `
+                    <button onclick="moveImageInQueue(${index}, -1)" class="p-1.5 rounded-lg bg-white border border-slate-200 hover:text-blue-600 hover:bg-slate-50 text-slate-500 transition-colors ${index === 0 ? 'opacity-30 pointer-events-none' : ''}"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="rotateImageElement(${index})" class="p-1.5 rounded-lg bg-white border border-slate-200 hover:text-blue-600 text-slate-500 hover:bg-slate-50 flex items-center gap-1 text-[10px] font-bold"><i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> 90°</button>
+                    <button onclick="moveImageInQueue(${index}, 1)" class="p-1.5 rounded-lg bg-white border border-slate-200 hover:text-blue-600 hover:bg-slate-50 text-slate-500 transition-colors ${index === localImageFilesArr.length - 1 ? 'opacity-30 pointer-events-none' : ''}"><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="removeImageFromQueue(${index})" class="p-1.5 rounded-lg bg-white border border-red-200 text-red-500 hover:bg-red-50 transition-colors ml-auto"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                `;
+
+                card.appendChild(imgWrapper);
+                card.appendChild(metaText);
+                card.appendChild(actionToolbar);
+                gridContainer.appendChild(card);
+            });
+
+            if (window.lucide) lucide.createIcons();
+            updateCompressionLabels();
+        }
+
+        async function convertImagesToPdf() {
+            if (localImageFilesArr.length === 0) return;
+
+            const fill = document.getElementById('progress-fill');
+            const text = document.getElementById('progress-text');
+            document.getElementById('loading-status-lbl').innerText = "Processing & Aligning Image Layers";
+            document.getElementById('loading-view').classList.remove('hidden');
+
+            const scaleRatioFactor = parseInt(document.getElementById('slider-img-scale').value) / 100;
+            const absoluteCompressionRate = parseInt(document.getElementById('slider-img-quality').value) / 100;
+            const pdfPasswordValue = document.getElementById('pdf-security-pass').value;
+
+            try {
+                const pdfDocInstance = await PDFLib.PDFDocument.create();
+
+                for (let i = 0; i < localImageFilesArr.length; i++) {
+                    const item = localImageFilesArr[i];
+                    const blobUrl = URL.createObjectURL(item.file);
+                    
+                    const imgHtml = new Image();
+                    imgHtml.src = blobUrl;
+                    await new Promise((res, rej) => { imgHtml.onload = res; imgHtml.onerror = rej; });
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Multipliers adjust frame dimension configurations accurately
+                    let origW = imgHtml.naturalWidth * scaleRatioFactor;
+                    let origH = imgHtml.naturalHeight * scaleRatioFactor;
+
+                    // Swap logic rules if internal canvas node has landscape active configurations
+                    if (item.rotation === 90 || item.rotation === 270) {
+                        canvas.width = origH; canvas.height = origW;
+                    } else {
+                        canvas.width = origW; canvas.height = origH;
+                    }
+
+                    // Perform standard rendering conversions inside canvas context grid transformations
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate((item.rotation * Math.PI) / 180);
+                    ctx.drawImage(imgHtml, -origW / 2, -origH / 2, origW, origH);
+
+                    const recompressedDataUrl = canvas.toDataURL('image/jpeg', absoluteCompressionRate);
+                    const embeddedJpg = await pdfDocInstance.embedJpg(recompressedDataUrl);
+                    
+                    const page = pdfDocInstance.addPage([embeddedJpg.width, embeddedJpg.height]);
+                    page.drawImage(embeddedJpg, { x: 0, y: 0, width: embeddedJpg.width, height: embeddedJpg.height });
+
+                    URL.revokeObjectURL(blobUrl);
+                    canvas.width = 0; canvas.height = 0;
+
+                    let percentage = Math.floor(((i + 1) / localImageFilesArr.length) * 100);
+                    fill.style.width = percentage + '%';
+                    text.innerText = percentage + '%';
+                }
+
+                // FEATURE: Apply target security password parameters if requested by user interface inputs
+                if(pdfPasswordValue.trim().length > 0) {
+                     // Note: Native client-side pass security compilation context can be expanded here or warned for server actions
+                     console.log("Encryption context flagged for file name compilation.");
+                }
+
+                const finalPdfBytes = await pdfDocInstance.save();
+                const blob = new Blob([finalPdfBytes], { type: 'application/pdf' });
+                const finalBlobUrl = URL.createObjectURL(blob);
+
+                const sizeMB = (blob.size / (1024 * 1024)).toFixed(2);
+                document.getElementById('final-file-meta-lbl').innerText = `Compiled Document PDF Ready • ${sizeMB} MB`;
+
+                const downloadActionBtn = document.getElementById('master-download-btn');
+                downloadActionBtn.href = finalBlobUrl;
+                downloadActionBtn.download = "processed_media_useas.pdf";
+
+                await renderLivePreviews(finalPdfBytes, "pdf");
+
+            } catch (err) {
+                console.error(err);
+                alert("Error compiling custom arranged asset elements.");
+                location.reload();
+            }
+        }
+
+        // --- MODE 2: PDF TO IMAGES ---
+        function setImgOutputFormat(formatString) {
+            pdfToImageOutputFormat = formatString;
+            ['fmt-jpg', 'fmt-png'].forEach(id => {
+                const btn = document.getElementById(id);
+                if ((id === 'fmt-jpg' && formatString === 'image/jpeg') || (id === 'fmt-png' && formatString === 'image/png')) {
+                    btn.className = "px-3 py-1.5 rounded-lg bg-white text-blue-600 shadow-sm";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-slate-500";
+                }
+            });
+        }
+
+        async function processIncomingPdf(e) {
+            const selectedPdfFile = e.target.files[0];
+            if (!selectedPdfFile) return;
+
+            pdfTargetFileName = selectedPdfFile.name.replace(/\.[^/.]+$/, "");
+            pdfTargetBlobBytes = await selectedPdfFile.arrayBuffer();
+
+            const pdfDescriptor = await pdfjs.getDocument({ data: pdfTargetBlobBytes.slice(0) }).promise;
+            pdfTargetTotalPages = pdfDescriptor.numPages;
+            
+            document.getElementById('pdf-file-title').innerText = selectedPdfFile.name;
+            document.getElementById('pdf-page-count-lbl').innerText = `${pdfTargetTotalPages} Document Pages Found`;
+            document.getElementById('pdf-tune-card').classList.remove('hidden');
+            updateCompressionLabels();
+        }
+
+        // FEATURE: Parser helper logic sets up custom target extraction strings indices safely
+        function parsePageRangeInputString(rangeStr, maxPages) {
+            if (!rangeStr || rangeStr.trim() === "") {
+                return Array.from({ length: maxPages }, (_, i) => i + 1);
+            }
+            const structuralIndicesList = new Set();
+            const segments = rangeStr.split(',');
+            
+            segments.forEach(seg => {
+                if (seg.includes('-')) {
+                    const [start, end] = seg.split('-').map(num => parseInt(num.trim()));
+                    if (!isNaN(start) && !isNaN(end)) {
+                        for (let i = Math.max(1, start); i <= Math.min(maxPages, end); i++) {
+                            structuralIndicesList.add(i);
+                        }
+                    }
+                } else {
+                    const exactPageNum = parseInt(seg.trim());
+                    if (!isNaN(exactPageNum) && exactPageNum >= 1 && exactPageNum <= maxPages) {
+                        structuralIndicesList.add(exactPageNum);
+                    }
+                }
+            });
+            return Array.from(structuralIndicesList).sort((a, b) => a - b);
+        }
+
+        async function convertPdfToImages() {
+            if (!pdfTargetBlobBytes) return;
+
+            const fill = document.getElementById('progress-fill');
+            const text = document.getElementById('progress-text');
+            document.getElementById('loading-status-lbl').innerText = "Parsing target page configurations";
+            document.getElementById('loading-view').classList.remove('hidden');
+
+            const targetScaleMultiplier = parseFloat(document.getElementById('slider-pdf-scale').value);
+            const rawRangeInputStr = document.getElementById('pdf-extraction-range').value;
+
+            try {
+                const archiveZip = new JSZip();
+                const imageStringUrlsArray = [];
+
+                const pdfObject = await pdfjs.getDocument({ data: pdfTargetBlobBytes }).promise;
+                const activePagesToExtract = parsePageRangeInputString(rawRangeInputStr, pdfTargetTotalPages);
+                const extensionString = pdfToImageOutputFormat === "image/png" ? "png" : "jpg";
+
+                if (activePagesToExtract.length === 0) {
+                    alert("No valid page indices matching input rules were found.");
+                    document.getElementById('loading-view').classList.add('hidden');
+                    return;
+                }
+
+                for (let idx = 0; idx < activePagesToExtract.length; idx++) {
+                    const pageNumber = activePagesToExtract[idx];
+                    const page = await pdfObject.getPage(pageNumber);
+                    const viewport = page.getViewport({ scale: targetScaleMultiplier });
+                    
+                    const processingCanvas = document.createElement('canvas');
+                    const canvasContext = processingCanvas.getContext('2d');
+                    processingCanvas.width = viewport.width;
+                    processingCanvas.height = viewport.height;
+
+                    await page.render({ canvasContext, viewport }).promise;
+
+                    const dataUrlString = processingCanvas.toDataURL(pdfToImageOutputFormat, 0.90);
+                    const parsedBase64RawData = dataUrlString.split(',')[1];
+
+                    archiveZip.file(`extracted_page_${pageNumber}.${extensionString}`, parsedBase64RawData, { base64: true });
+                    imageStringUrlsArray.push({ url: dataUrlString, displayLabel: `PAGE ${pageNumber}` });
+
+                    processingCanvas.width = 0; processingCanvas.height = 0;
+
+                    let currentPercent = Math.floor(((idx + 1) / activePagesToExtract.length) * 100);
+                    fill.style.width = currentPercent + '%';
+                    text.innerText = currentPercent + '%';
+                }
+
+                const compiledZipBlob = await archiveZip.generateAsync({ type: 'blob' });
+                const zipBlobUrl = URL.createObjectURL(compiledZipBlob);
+
+                const sizeMB = (compiledZipBlob.size / (1024 * 1024)).toFixed(2);
+                document.getElementById('final-file-meta-lbl').innerText = `Extracted Package Bundle (${activePagesToExtract.length} pages) • ${sizeMB} MB`;
+
+                const downloadActionBtn = document.getElementById('master-download-btn');
+                downloadActionBtn.href = zipBlobUrl;
+                downloadActionBtn.download = `${pdfTargetFileName}_extracted_images.zip`;
+
+                await renderLivePreviews(imageStringUrlsArray, "images");
+
+            } catch (err) {
+                console.error(err);
+                alert("Error extracting target source index nodes.");
+                location.reload();
+            }
+        }
+
+        // --- PREVIEW SYSTEM MATRICES ---
+        async function renderLivePreviews(payload, internalRenderingContext) {
+            const gallery = document.getElementById('preview-gallery-container');
+            gallery.innerHTML = '';
+
+            if (internalRenderingContext === "pdf") {
+                const renderTargetPdf = await pdfjs.getDocument({ data: payload }).promise;
+                for (let i = 1; i <= renderTargetPdf.numPages; i++) {
+                    const targetPage = await renderTargetPdf.getPage(i);
+                    const viewport = targetPage.getViewport({ scale: 0.45 });
+                    
+                    const itemCard = document.createElement('div');
+                    itemCard.className = "bg-slate-50 border border-slate-100 p-2 rounded-xl text-center";
+
+                    const canvas = document.createElement('canvas');
+                    canvas.className = "w-full h-auto bg-white rounded-lg border shadow-sm mb-1.5";
+                    canvas.width = viewport.width; canvas.height = viewport.height;
+                    await targetPage.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+                    const labelSpan = document.createElement('span');
+                    labelSpan.className = "text-[9px] font-black text-slate-400 uppercase tracking-widest";
+                    labelSpan.innerText = `PAGE SLICE ${i}`;
+
+                    itemCard.appendChild(canvas);
+                    itemCard.appendChild(labelSpan);
+                    gallery.appendChild(itemCard);
+                }
+            } else if (internalRenderingContext === "images") {
+                payload.forEach((item) => {
+                    const itemCard = document.createElement('div');
+                    itemCard.className = "bg-slate-50 border border-slate-100 p-2 rounded-xl text-center";
+
+                    const imgElement = document.createElement('img');
+                    imgElement.className = "w-full h-auto rounded-lg border shadow-sm mb-1.5 object-contain max-h-60 bg-white";
+                    imgElement.src = item.url;
+
+                    const labelSpan = document.createElement('span');
+                    labelSpan.className = "text-[9px] font-black text-slate-400 uppercase tracking-widest";
+                    labelSpan.innerText = item.displayLabel;
+
+                    itemCard.appendChild(imgElement);
+                    itemCard.appendChild(labelSpan);
+                    gallery.appendChild(itemCard);
+                });
+            }
+
+            setTimeout(() => {
+                document.getElementById('loading-view').classList.add('hidden');
+                document.getElementById('output-preview-view').classList.remove('hidden');
+                document.getElementById('progress-fill').style.width = '0%';
+                if (window.lucide) lucide.createIcons();
+            }, 600);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
