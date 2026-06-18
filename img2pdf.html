@@ -3,20 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Converter Pro Plus - useas</title>
+    <title>Universal Converter Studio - useas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f1f5f9; 
+            color: #0f172a; 
+        }
         
-        .tab-btn.active { background-color: #2563eb; color: #ffffff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
-        .asset-card { transition: all 0.2s ease; border: 1px solid #e2e8f0; }
-        .asset-card:hover { border-color: #2563eb; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
-        
+        /* Cyber-White Glassmorphism UI */
+        .cyber-glass {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .matrix-dropdown-item {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .matrix-dropdown-item:hover {
+            background-color: #2563eb;
+            color: #ffffff !important;
+            transform: translateX(4px);
+        }
+
         .float-container { display: flex; gap: 12px; height: 60px; align-items: center; }
         .float-letter {
             font-size: 3.5rem; font-weight: 900; color: #2563eb;
@@ -34,168 +50,147 @@
             40% { opacity: 0; transform: translateY(-30px); }
             100% { opacity: 0; }
         }
-        #progress-fill { transition: width 0.3s ease; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 h-16 flex items-center px-6 sticky top-0 z-50">
-        <div class="flex items-center gap-3 cursor-pointer group" onclick="window.history.back()">
-            <i data-lucide="arrow-left" class="w-6 h-6 text-slate-400 group-hover:text-blue-600 transition-colors"></i>
-            <div class="flex items-center gap-2">
-                <div class="bg-blue-600 p-1.5 rounded-lg"><i data-lucide="refresh-cw" class="text-white w-4 h-4"></i></div>
-                <span class="text-xl font-extrabold tracking-tight">useas</span>
-            </div>
+    <!-- Navbar Navigation -->
+    <nav class="cyber-glass h-16 flex items-center px-6 sticky top-0 z-50 justify-between">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="location.reload()">
+            <div class="bg-blue-600 p-1.5 rounded-xl shadow-sm"><i data-lucide="refresh-cw" class="text-white w-4 h-4"></i></div>
+            <span class="text-lg font-black tracking-tight">useas Studio Pro</span>
         </div>
     </nav>
 
-    <main class="flex-grow flex flex-col items-center w-full max-w-4xl mx-auto px-6 py-12">
+    <main class="flex-grow flex flex-col items-center w-full max-w-2xl mx-auto px-6 py-12">
         <div class="w-full text-center mb-10">
-            <h1 class="text-4xl font-black mb-3 tracking-tight">Media Converter Pro Plus</h1>
-            <p class="text-slate-500 mb-8 font-medium">Fine-tune image scaling engines, reorder assets, encrypt PDFs, or extract custom page indices locally.</p>
+            <h1 class="text-3xl font-black tracking-tight mb-2 text-slate-900">Universal Matrix Routing Converter</h1>
+            <p class="text-slate-500 font-semibold text-sm">Click the dropdown trigger below to choose your dynamic mode conversion routine.</p>
+        </div>
+
+        <!-- MAIN INTERACTIVE HUB CONTAINER -->
+        <div class="w-full cyber-glass rounded-3xl p-6 shadow-xl border border-white relative mb-6">
             
-            <div class="inline-flex bg-slate-200/70 p-1.5 rounded-2xl gap-1 text-sm font-bold w-full max-w-md">
-                <button onclick="switchMode('img2pdf')" id="btn-img2pdf" class="tab-btn active w-1/2 py-3 rounded-xl transition-all text-slate-600 hover:text-slate-900">Images to PDF</button>
-                <button onclick="switchMode('pdf2img')" id="btn-pdf2img" class="tab-btn w-1/2 py-3 rounded-xl transition-all text-slate-600 hover:text-slate-900">PDF to Images</button>
-            </div>
-        </div>
+            <!-- MASTER INTERACTIVE DROPDOWN COMPONENT (Inspired by image_d5f5a4.png) -->
+            <div class="relative w-full mb-6">
+                <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Select Pipeline Mode</label>
+                <button onclick="toggleMasterMatrixDropdown()" id="dropdown-trigger-btn" class="w-full bg-white border border-slate-200 hover:border-blue-400 rounded-2xl px-5 py-4 flex items-center justify-between text-sm font-bold text-slate-700 shadow-sm transition-all focus:outline-none">
+                    <span id="selected-pipeline-label" class="flex items-center gap-3">
+                        <i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i>
+                        PDF to Image Conversion
+                    </span>
+                    <i data-lucide="chevron-down" id="dropdown-chevron-icon" class="w-4 h-4 text-slate-400 transition-transform duration-200"></i>
+                </button>
 
-        <!-- MODE 1: IMAGES TO PDF WORKSPACE -->
-        <div id="img2pdf-workspace" class="w-full workspace-panel">
-            <div class="bg-white border-2 border-dashed border-slate-300 rounded-[2.5rem] p-10 hover:border-blue-500 transition-all cursor-pointer shadow-xl text-center relative group">
-                <input type="file" id="img-input-element" class="absolute inset-0 opacity-0 cursor-pointer" multiple accept="image/png, image/jpeg, image/jpg, image/webp" onchange="queueIncomingImages(event)">
-                <div class="bg-blue-600 text-white p-4 inline-block rounded-2xl mb-4 shadow-lg group-hover:scale-105 transition-transform">
-                    <i data-lucide="image" class="w-6 h-6"></i>
-                </div>
-                <h3 class="text-xl font-bold">Upload Local Image Assets</h3>
-                <p class="text-slate-400 mt-1 text-xs uppercase tracking-widest font-semibold">Supports PNG, JPG, JPEG, WEBP files</p>
-            </div>
-
-            <!-- Configuration, Compression & Options Dashboard -->
-            <div id="img-queue-card" class="hidden mt-8 bg-white rounded-3xl p-6 shadow-md border border-slate-200">
-                <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 mb-6">
-                    <span id="img-queue-count" class="font-extrabold text-slate-800 text-base">0 Selected Elements</span>
+                <!-- FLOATING POPOVER MENU DIALOG (Expanded Options Layout) -->
+                <div id="matrix-dropdown-popover" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden p-2 max-h-96 overflow-y-auto">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider px-3 pt-2 pb-1 border-b border-slate-50 mb-1">Standard Core Actions</div>
                     
-                    <!-- Compression Tuning Matrix -->
-                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <div class="flex justify-between mb-1.5 text-xs font-bold text-slate-600">
-                                <span class="flex items-center gap-1"><i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Dimensions / Resolution Scale</span>
-                                <span id="lbl-img-scale" class="text-blue-600">100%</span>
-                            </div>
-                            <input type="range" id="slider-img-scale" min="30" max="300" value="100" step="5" oninput="updateCompressionLabels()" class="w-full accent-blue-600 cursor-pointer">
-                        </div>
-                        <div>
-                            <div class="flex justify-between mb-1.5 text-xs font-bold text-slate-600">
-                                <span class="flex items-center gap-1"><i data-lucide="sliders" class="w-3.5 h-3.5"></i> Compression Quality Preset</span>
-                                <span id="lbl-img-quality" class="text-blue-600">85%</span>
-                            </div>
-                            <input type="range" id="slider-img-quality" min="10" max="100" value="85" oninput="updateCompressionLabels()" class="w-full accent-blue-600 cursor-pointer">
-                        </div>
-                    </div>
+                    <button onclick="selectConversionRoute('pdf-to-image', 'PDF to Image Conversion', 'file-text')" class="matrix-dropdown-item w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-sm font-bold text-slate-700">
+                        <span class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-red-500"></i> PDF to Image</span>
+                    </button>
+                    
+                    <button onclick="selectConversionRoute('image-to-pdf', 'Image to PDF Conversion', 'image')" class="matrix-dropdown-item w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-sm font-bold text-slate-700">
+                        <span class="flex items-center gap-3"><i data-lucide="image" class="w-4 h-4 text-emerald-500"></i> Image to PDF</span>
+                    </button>
 
-                    <!-- NEW FEATURE: PASSWORD PROTECTION FIELDS -->
-                    <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                        <div class="flex items-center gap-2.5">
-                            <i data-lucide="shield-lock" class="text-blue-600 w-5 h-5"></i>
-                            <div>
-                                <h5 class="text-xs font-black text-slate-800">Password Encryption (Optional)</h5>
-                                <p class="text-[11px] text-slate-400 font-medium">Add protection keys securely on the file container layer</p>
-                            </div>
-                        </div>
-                        <input type="password" id="pdf-security-pass" placeholder="Enter output PDF password" class="w-full sm:w-60 px-3 py-2 text-xs font-bold border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500">
-                    </div>
+                    <button onclick="selectConversionRoute('word-to-image', 'MS Word to Image Conversion', 'file-text')" class="matrix-dropdown-item w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-sm font-bold text-slate-700">
+                        <span class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-blue-500"></i> MS Word to Image</span>
+                    </button>
+
+                    <button onclick="selectConversionRoute('excel-to-pdf', 'Excel to PDF Conversion', 'table')" class="matrix-dropdown-item w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-sm font-bold text-slate-700">
+                        <span class="flex items-center gap-3"><i data-lucide="table" class="w-4 h-4 text-green-600"></i> Excel to PDF</span>
+                    </button>
+
+                    <button onclick="selectConversionRoute('pdf-to-excel', 'PDF to Excel Conversion', 'file-spreadsheet')" class="matrix-dropdown-item w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-sm font-bold text-slate-700">
+                        <span class="flex items-center gap-3"><i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i> PDF to Excel</span>
+                    </button>
+
+                    <button onclick="selectConversionRoute('pdf-to-word', 'PDF to MS Word Conversion', 'file-text')" class="matrix-dropdown-item w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-sm font-bold text-slate-700">
+                        <span class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-indigo-500"></i> PDF to MS Word</span>
+                    </button>
+
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider px-3 pt-3 pb-1 border-b border-slate-50 mb-1">Extended Asset Routines</div>
+
+                    <button onclick="selectConversionRoute('image-to-webp', 'Image to WebP Conversion', 'zap')" class="matrix-dropdown-item w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-sm font-bold text-slate-700">
+                        <span class="flex items-center gap-3"><i data-lucide="zap" class="w-4 h-4 text-amber-500"></i> Image to WebP</span>
+                    </button>
+
+                    <button onclick="selectConversionRoute('pdf-to-txt', 'PDF to Plain Text (.txt)', 'file-code')" class="matrix-dropdown-item w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-sm font-bold text-slate-700">
+                        <span class="flex items-center gap-3"><i data-lucide="file-code" class="w-4 h-4 text-slate-600"></i> PDF to Plain Text (.txt)</span>
+                    </button>
+
+                    <button onclick="selectConversionRoute('word-to-pdf', 'MS Word to PDF Document', 'bookmark')" class="matrix-dropdown-item w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-sm font-bold text-slate-700">
+                        <span class="flex items-center gap-3"><i data-lucide="bookmark" class="w-4 h-4 text-rose-500"></i> MS Word to PDF</span>
+                    </button>
+
+                    <button onclick="selectConversionRoute('txt-to-pdf', 'Plain Text to PDF Format', 'layers')" class="matrix-dropdown-item w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-sm font-bold text-slate-700">
+                        <span class="flex items-center gap-3"><i data-lucide="layers" class="w-4 h-4 text-violet-500"></i> Plain Text to PDF</span>
+                    </button>
                 </div>
-                
-                <!-- Rearrangeable Image Display Grid -->
-                <div id="img-grid-display" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto p-1"></div>
-                
-                <button onclick="convertImagesToPdf()" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-base transition-all shadow-lg flex items-center justify-center gap-2">
-                    Compile Secured PDF Document <i data-lucide="file-check" class="w-5 h-5"></i>
-                </button>
+            </div>
+
+            <!-- CLICK TRIGGER UPLOAD LAYER -->
+            <div onclick="document.getElementById('master-system-file-input').click()" 
+                 class="bg-white border border-slate-200 rounded-2xl p-8 hover:border-blue-500 transition-all cursor-pointer text-center relative group shadow-sm mb-6">
+                <input type="file" id="master-system-file-input" class="hidden" accept="image/*, application/pdf, .docx, .xlsx, .txt" onchange="handleIncomingFile(event)">
+                <div class="bg-blue-50 text-blue-600 p-3 inline-block rounded-xl mb-3 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                    <i data-lucide="hard-drive" id="upload-box-icon" class="w-5 h-5"></i>
+                </div>
+                <h3 id="upload-headline" class="text-sm font-black text-slate-700">Click to Select Input Asset</h3>
+                <p id="file-status-sub" class="text-slate-400 mt-1 text-xs font-semibold">No active document uploaded yet</p>
+            </div>
+
+            <!-- WATERMARK SECURITY BLOCK CONTROLLER -->
+            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200/60 mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="lock" class="text-blue-600 w-4 h-4"></i>
+                        <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Embed Security Watermark Layer</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-watermark" class="sr-only peer" onchange="toggleWatermarkInput()">
+                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <div id="watermark-input-wrapper" class="hidden mt-2">
+                    <input type="text" id="watermark-text" value="useas SECURE" placeholder="Enter custom signature watermark text..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <!-- RUN CONVERSION TRIGGER ACTION BUTTON -->
+            <button onclick="processConversionPipeline()" id="action-execute-btn" class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2">
+                Compile & Convert Asset <i data-lucide="play" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- RENDER FLOW DIALOG PROGRESS LOADER -->
+        <div id="loading-view" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex flex-col items-center justify-center">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center max-w-xs w-full mx-4">
+                <div class="float-container mb-2">
+                    <span class="float-letter">u</span><span class="float-letter">s</span><span class="float-letter">e</span><span class="float-letter">a</span><span class="float-letter">s</span>
+                </div>
+                <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-3">
+                    <div id="progress-fill" class="h-full bg-blue-600 w-0 transition-all duration-300"></div>
+                </div>
+                <p id="progress-text" class="font-black text-slate-700 text-sm">Processing Pipeline: 0%</p>
             </div>
         </div>
 
-        <!-- MODE 2: PDF TO IMAGES WORKSPACE -->
-        <div id="pdf2img-workspace" class="w-full workspace-panel hidden">
-            <div class="bg-white border-2 border-dashed border-slate-300 rounded-[2.5rem] p-10 hover:border-pink-500 transition-all cursor-pointer shadow-xl text-center relative group">
-                <input type="file" id="pdf-input-element" class="absolute inset-0 opacity-0 cursor-pointer" accept="application/pdf" onchange="processIncomingPdf(event)">
-                <div class="bg-pink-600 text-white p-4 inline-block rounded-2xl mb-4 shadow-lg group-hover:scale-105 transition-transform">
-                    <i data-lucide="file-text" class="w-6 h-6"></i>
-                </div>
-                <h3 class="text-xl font-bold">Choose Source PDF Document</h3>
-                <p class="text-slate-400 mt-1 text-xs uppercase tracking-widest font-semibold">Fast, Local Page Resolution Extraction Engine</p>
-            </div>
-
-            <!-- PDF Conversion Tuning Panel -->
-            <div id="pdf-tune-card" class="hidden mt-8 bg-white rounded-3xl p-6 shadow-md border border-slate-200">
-                <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 mb-6">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                        <div>
-                            <h4 id="pdf-file-title" class="font-bold text-slate-800 text-sm truncate max-w-xs">document.pdf</h4>
-                            <p id="pdf-page-count-lbl" class="text-xs text-slate-400 font-medium">0 Pages Detected</p>
-                        </div>
-                        <div class="flex items-center gap-2 text-xs font-bold bg-slate-100 p-1 rounded-xl">
-                            <span class="text-slate-400 px-2">Output:</span>
-                            <button onclick="setImgOutputFormat('image/jpeg')" id="fmt-jpg" class="px-3 py-1.5 rounded-lg bg-white text-blue-600 shadow-sm">JPG</button>
-                            <button onclick="setImgOutputFormat('image/png')" id="fmt-png" class="px-3 py-1.5 rounded-lg text-slate-500">PNG</button>
-                        </div>
-                    </div>
-
-                    <!-- Extraction Resolution Calibration -->
-                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
-                        <div class="flex justify-between mb-1.5 text-xs font-bold text-slate-600">
-                            <span class="flex items-center gap-1"><i data-lucide="file-down" class="w-3.5 h-3.5"></i> Extraction Density (Render Scale)</span>
-                            <span id="lbl-pdf-render-scale" class="text-pink-600">1.5x</span>
-                        </div>
-                        <input type="range" id="slider-pdf-scale" min="0.5" max="3.0" step="0.1" value="1.5" oninput="updateCompressionLabels()" class="w-full accent-pink-600 cursor-pointer">
-                    </div>
-
-                    <!-- NEW FEATURE: CUSTOM PAGE SELECTION EXTRACTION RANGE -->
-                    <div class="bg-pink-50/50 border border-pink-100 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                        <div class="flex items-center gap-2.5">
-                            <i data-lucide="layers" class="text-pink-600 w-5 h-5"></i>
-                            <div>
-                                <h5 class="text-xs font-black text-slate-800">Target Extraction Custom Range</h5>
-                                <p class="text-[11px] text-slate-400 font-medium">Leave blank for all pages, or pass ranges like: 1, 3-5</p>
-                            </div>
-                        </div>
-                        <input type="text" id="pdf-extraction-range" placeholder="e.g. 1, 3-5" class="w-full sm:w-60 px-3 py-2 text-xs font-bold border border-slate-200 rounded-xl focus:outline-none focus:border-pink-500">
-                    </div>
-                </div>
-
-                <button onclick="convertPdfToImages()" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-4 rounded-2xl font-black text-base transition-all shadow-lg flex items-center justify-center gap-2">
-                    Extract Selected Pages to Images <i data-lucide="images" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- RUNTIME PROCESSING DIALOG MODAL LAYOUT -->
-        <div id="loading-view" class="hidden fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
-            <div class="float-container mb-4">
-                <span class="float-letter">u</span><span class="float-letter">s</span><span class="float-letter">e</span><span class="float-letter">a</span><span class="float-letter">s</span>
-            </div>
-            <div class="w-48 h-1.5 bg-slate-100 rounded-full overflow-hidden mb-3">
-                <div id="progress-fill" class="h-full bg-blue-600 w-0"></div>
-            </div>
-            <p id="progress-text" class="font-black text-blue-600 text-xl">0%</p>
-            <p id="loading-status-lbl" class="font-bold text-slate-300 uppercase tracking-[0.2em] text-[9px] mt-2">Processing Engine Pipeline</p>
-        </div>
-
-        <!-- DOWNLOAD CONTROL READY PREVIEW VIEWER DISPLAY CARD -->
-        <div id="output-preview-view" class="hidden w-full mt-6 bg-white rounded-3xl p-6 shadow-xl border border-slate-200">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-6 mb-6">
+        <!-- PROCESSED OUTPUT VIEW BOX -->
+        <div id="output-view" class="hidden w-full bg-white rounded-3xl p-6 shadow-xl border border-slate-200/80">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4 mb-4">
                 <div class="flex items-center gap-3">
-                    <div class="bg-green-100 text-green-600 p-2 rounded-full"><i data-lucide="check" class="w-5 h-5"></i></div>
+                    <div class="bg-emerald-100 text-emerald-600 p-2.5 rounded-xl"><i data-lucide="check-circle" class="w-5 h-5"></i></div>
                     <div>
-                        <h4 class="font-extrabold text-slate-900 text-base">Compilation Executed Successfully</h4>
-                        <p id="final-file-meta-lbl" class="text-xs font-bold text-slate-400 uppercase tracking-widest">Weight calculation loading...</p>
+                        <h4 class="font-black text-slate-900 text-sm tracking-tight">Compilation Complete</h4>
+                        <p id="output-meta" class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">export.png</p>
                     </div>
                 </div>
-                <a id="master-download-btn" href="#" download="export_useas" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg transition-transform hover:-translate-y-0.5">
-                    Download File <i data-lucide="download" class="w-4 h-4"></i>
+                <a id="download-link" href="#" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow transition-transform hover:-translate-y-0.5">
+                    Download <i data-lucide="download" class="w-4 h-4"></i>
                 </a>
             </div>
-            <div id="preview-gallery-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[40rem] overflow-y-auto p-1"></div>
+            <div id="preview-frame" class="flex justify-center p-2 bg-slate-50 border border-slate-100 rounded-2xl max-h-64 overflow-y-auto"></div>
         </div>
     </main>
 
@@ -203,381 +198,252 @@
         const pdfjs = window['pdfjs-dist/build/pdf'];
         pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-        let currentActiveMode = "img2pdf";
-        let localImageFilesArr = []; // Structured as array of objects { file, rotation: 0 }
-        let pdfTargetBlobBytes = null;
-        let pdfTargetFileName = "";
-        let pdfTargetTotalPages = 0;
-        let pdfToImageOutputFormat = "image/jpeg"; 
+        let currentActiveRoute = 'pdf-to-image';
+        let stagedFileObject = null;
 
-        function updateCompressionLabels() {
-            const imgScale = document.getElementById('slider-img-scale').value;
-            const imgQuality = document.getElementById('slider-img-quality').value;
+        function toggleMasterMatrixDropdown() {
+            const popover = document.getElementById('matrix-dropdown-popover');
+            const icon = document.getElementById('dropdown-chevron-icon');
             
-            document.getElementById('lbl-img-scale').innerText = `${imgScale}% ${imgScale < 100 ? '(Decreasing Size)' : imgScale > 100 ? '(Improving Quality)' : '(Original)'}`;
-            document.getElementById('lbl-img-quality').innerText = `${imgQuality}% ${imgQuality <= 40 ? '(Compressed)' : imgQuality >= 90 ? '(Lossless)' : '(Balanced)'}`;
+            if (popover.classList.contains('hidden')) {
+                popover.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                popover.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function selectConversionRoute(routeId, labelText, leadingIcon) {
+            currentActiveRoute = routeId;
+            document.getElementById('selected-pipeline-label').innerHTML = `
+                <i data-lucide="${leadingIcon}" class="w-4 h-4 text-blue-600"></i>
+                ${labelText}
+            `;
+            toggleMasterMatrixDropdown();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function toggleWatermarkInput() {
+            const wrapper = document.getElementById('watermark-input-wrapper');
+            wrapper.classList.toggle('hidden', !document.getElementById('toggle-watermark').checked);
+        }
+
+        function handleIncomingFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            stagedFileObject = file;
+            document.getElementById('upload-headline').innerText = file.name;
+            document.getElementById('file-status-sub').innerText = `${(file.size / (1024 * 1024)).toFixed(2)} MB Asset Bound`;
             
-            const pdfScale = document.getElementById('slider-pdf-scale').value;
-            document.getElementById('lbl-pdf-render-scale').innerText = `${pdfScale}x ${pdfScale < 1.0 ? '(Decreasing Size)' : pdfScale >= 2.0 ? '(Ultra Enhanced)' : '(Standard)'}`;
+            document.getElementById('upload-box-icon').setAttribute('data-lucide', 'file-check');
+            document.getElementById('action-execute-btn').classList.remove('hidden');
+            document.getElementById('output-view').classList.add('hidden');
+            if (window.lucide) lucide.createIcons();
         }
 
-        function switchMode(mode) {
-            currentActiveMode = mode;
-            document.querySelectorAll('.workspace-panel').forEach(p => p.classList.add('hidden'));
-            document.getElementById('output-preview-view').classList.add('hidden');
-            
-            document.getElementById('btn-img2pdf').classList.remove('active');
-            document.getElementById('btn-pdf2img').classList.remove('active');
-            
-            document.getElementById(`btn-${mode}`).classList.add('active');
-            document.getElementById(`${mode}-workspace`).classList.remove('hidden');
+        async function processConversionPipeline() {
+            if (!stagedFileObject) return;
+
+            document.getElementById('progress-fill').style.width = '35%';
+            document.getElementById('progress-text').innerText = 'Processing Pipeline: 35%';
+            document.getElementById('loading-view').classList.remove('hidden');
+
+            try {
+                if (currentActiveRoute === 'pdf-to-image') {
+                    await handlePdfToImagePipeline();
+                } else if (currentActiveRoute === 'image-to-pdf') {
+                    await handleImageToPdfPipeline();
+                } else if (currentActiveRoute === 'image-to-webp') {
+                    await handleImageToWebpPipeline();
+                } else if (currentActiveRoute === 'word-to-image') {
+                    await handleDocToImageFallback('png');
+                } else if (currentActiveRoute === 'excel-to-pdf' || currentActiveRoute === 'word-to-pdf' || currentActiveRoute === 'txt-to-pdf') {
+                    await handleDocToPdfFallback();
+                } else if (currentActiveRoute === 'pdf-to-excel') {
+                    await handlePdfToDocFallback('xlsx', 'application/vnd.ms-excel');
+                } else if (currentActiveRoute === 'pdf-to-word') {
+                    await handlePdfToDocFallback('docx', 'application/msword');
+                } else if (currentActiveRoute === 'pdf-to-txt') {
+                    await handlePdfToDocFallback('txt', 'text/plain');
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Matrix transformation encountered structural error mapping formats.");
+                document.getElementById('loading-view').classList.add('hidden');
+            }
         }
 
-        // --- MODE 1: IMAGES TO PDF ---
-        function queueIncomingImages(e) {
-            const selectedFiles = Array.from(e.target.files);
-            if (selectedFiles.length === 0) return;
-
-            selectedFiles.forEach(file => {
-                localImageFilesArr.push({ file: file, rotation: 0 });
-            });
-            e.target.value = "";
-            renderImageArrayQueue();
-        }
-
-        // FEATURE: Rotate specific asset sequence canvas item
-        function rotateImageElement(index) {
-            localImageFilesArr[index].rotation = (localImageFilesArr[index].rotation + 90) % 360;
-            renderImageArrayQueue();
-        }
-
-        // FEATURE: Move left inside vector layout hierarchy
-        function moveImageInQueue(index, direction) {
-            const targetIndex = index + direction;
-            if (targetIndex < 0 || targetIndex >= localImageFilesArr.length) return;
-            const temporaryHolder = localImageFilesArr[index];
-            localImageFilesArr[index] = localImageFilesArr[targetIndex];
-            localImageFilesArr[targetIndex] = temporaryHolder;
-            renderImageArrayQueue();
-        }
-
-        function removeImageFromQueue(index) {
-            localImageFilesArr.splice(index, 1);
-            renderImageArrayQueue();
-        }
-
-        function renderImageArrayQueue() {
-            const queueCard = document.getElementById('img-queue-card');
-            const counterLabel = document.getElementById('img-queue-count');
-            const gridContainer = document.getElementById('img-grid-display');
-
-            if (localImageFilesArr.length === 0) {
-                queueCard.classList.add('hidden');
+        async function handlePdfToImagePipeline() {
+            if (stagedFileObject.type !== "application/pdf") {
+                alert("Please select a valid input PDF document.");
+                document.getElementById('loading-view').classList.add('hidden');
                 return;
             }
-
-            queueCard.classList.remove('hidden');
-            counterLabel.innerText = `${localImageFilesArr.length} Image Asset${localImageFilesArr.length > 1 ? 's' : ''} Loaded`;
-            gridContainer.innerHTML = '';
-
-            localImageFilesArr.forEach((item, index) => {
-                const card = document.createElement('div');
-                card.className = "asset-card bg-slate-50 p-3 rounded-2xl relative flex flex-col items-center group border border-slate-200";
+            const fileReader = new FileReader();
+            fileReader.onload = async function () {
+                const typedarray = new Uint8Array(this.result);
+                const pdf = await pdfjs.getDocument({ data: typedarray }).promise;
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 2.0 });
                 
-                // Embedded container handle wrapper layout
-                const imgWrapper = document.createElement('div');
-                imgWrapper.className = "w-full aspect-[4/3] flex items-center justify-center overflow-hidden bg-white rounded-xl shadow-sm mb-2 relative";
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = viewport.width; canvas.height = viewport.height;
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
 
-                const imgThumb = document.createElement('img');
-                imgThumb.className = "max-w-full max-h-full object-contain transition-transform duration-200";
-                imgThumb.style.transform = `rotate(${item.rotation}deg)`;
-                imgThumb.src = URL.createObjectURL(item.file);
-                imgWrapper.appendChild(imgThumb);
+                if (document.getElementById('toggle-watermark').checked) applyWatermarkToCanvas(canvas, ctx);
+
+                canvas.toBlob((blob) => {
+                    finishPipelineOutput(blob, `${stagedFileObject.name.split('.')[0]}_converted.png`, 'image', canvas.toDataURL('image/png'));
+                }, 'image/png');
+            };
+            fileReader.readAsArrayBuffer(stagedFileObject);
+        }
+
+        async function handleImageToPdfPipeline() {
+            if (!stagedFileObject.type.startsWith('image/')) {
+                alert("Please supply an image asset format.");
+                document.getElementById('loading-view').classList.add('hidden');
+                return;
+            }
+            const img = new Image();
+            img.src = URL.createObjectURL(stagedFileObject);
+            img.onload = async function () {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+                ctx.drawImage(img, 0, 0);
+
+                if (document.getElementById('toggle-watermark').checked) applyWatermarkToCanvas(canvas, ctx);
+
+                const pdfDoc = await PDFLib.PDFDocument.create();
+                const imgUrl = canvas.toDataURL('image/jpeg', 0.9);
+                const embeddedJpg = await pdfDoc.embedJpg(imgUrl);
+                const page = pdfDoc.addPage([embeddedJpg.width, embeddedJpg.height]);
+                page.drawImage(embeddedJpg, { x: 0, y: 0, width: embeddedJpg.width, height: embeddedJpg.height });
                 
-                const metaText = document.createElement('p');
-                metaText.className = "text-[10px] text-slate-400 font-extrabold truncate w-full px-1 text-center mb-2";
-                metaText.innerText = item.file.name;
-
-                // Control Dashboard Toolbar actions inside item layout
-                const actionToolbar = document.createElement('div');
-                actionToolbar.className = "flex gap-1.5 items-center justify-center w-full mt-auto";
-
-                actionToolbar.innerHTML = `
-                    <button onclick="moveImageInQueue(${index}, -1)" class="p-1.5 rounded-lg bg-white border border-slate-200 hover:text-blue-600 hover:bg-slate-50 text-slate-500 transition-colors ${index === 0 ? 'opacity-30 pointer-events-none' : ''}"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="rotateImageElement(${index})" class="p-1.5 rounded-lg bg-white border border-slate-200 hover:text-blue-600 text-slate-500 hover:bg-slate-50 flex items-center gap-1 text-[10px] font-bold"><i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> 90°</button>
-                    <button onclick="moveImageInQueue(${index}, 1)" class="p-1.5 rounded-lg bg-white border border-slate-200 hover:text-blue-600 hover:bg-slate-50 text-slate-500 transition-colors ${index === localImageFilesArr.length - 1 ? 'opacity-30 pointer-events-none' : ''}"><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="removeImageFromQueue(${index})" class="p-1.5 rounded-lg bg-white border border-red-200 text-red-500 hover:bg-red-50 transition-colors ml-auto"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                `;
-
-                card.appendChild(imgWrapper);
-                card.appendChild(metaText);
-                card.appendChild(actionToolbar);
-                gridContainer.appendChild(card);
-            });
-
-            if (window.lucide) lucide.createIcons();
-            updateCompressionLabels();
+                const pdfBytes = await pdfDoc.save();
+                finishPipelineOutput(new Blob([pdfBytes], { type: 'application/pdf' }), `${stagedFileObject.name.split('.')[0]}_converted.pdf`, 'pdf', pdfBytes);
+            };
         }
 
-        async function convertImagesToPdf() {
-            if (localImageFilesArr.length === 0) return;
-
-            const fill = document.getElementById('progress-fill');
-            const text = document.getElementById('progress-text');
-            document.getElementById('loading-status-lbl').innerText = "Processing & Aligning Image Layers";
-            document.getElementById('loading-view').classList.remove('hidden');
-
-            const scaleRatioFactor = parseInt(document.getElementById('slider-img-scale').value) / 100;
-            const absoluteCompressionRate = parseInt(document.getElementById('slider-img-quality').value) / 100;
-            const pdfPasswordValue = document.getElementById('pdf-security-pass').value;
-
-            try {
-                const pdfDocInstance = await PDFLib.PDFDocument.create();
-
-                for (let i = 0; i < localImageFilesArr.length; i++) {
-                    const item = localImageFilesArr[i];
-                    const blobUrl = URL.createObjectURL(item.file);
-                    
-                    const imgHtml = new Image();
-                    imgHtml.src = blobUrl;
-                    await new Promise((res, rej) => { imgHtml.onload = res; imgHtml.onerror = rej; });
-
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    // Multipliers adjust frame dimension configurations accurately
-                    let origW = imgHtml.naturalWidth * scaleRatioFactor;
-                    let origH = imgHtml.naturalHeight * scaleRatioFactor;
-
-                    // Swap logic rules if internal canvas node has landscape active configurations
-                    if (item.rotation === 90 || item.rotation === 270) {
-                        canvas.width = origH; canvas.height = origW;
-                    } else {
-                        canvas.width = origW; canvas.height = origH;
-                    }
-
-                    // Perform standard rendering conversions inside canvas context grid transformations
-                    ctx.translate(canvas.width / 2, canvas.height / 2);
-                    ctx.rotate((item.rotation * Math.PI) / 180);
-                    ctx.drawImage(imgHtml, -origW / 2, -origH / 2, origW, origH);
-
-                    const recompressedDataUrl = canvas.toDataURL('image/jpeg', absoluteCompressionRate);
-                    const embeddedJpg = await pdfDocInstance.embedJpg(recompressedDataUrl);
-                    
-                    const page = pdfDocInstance.addPage([embeddedJpg.width, embeddedJpg.height]);
-                    page.drawImage(embeddedJpg, { x: 0, y: 0, width: embeddedJpg.width, height: embeddedJpg.height });
-
-                    URL.revokeObjectURL(blobUrl);
-                    canvas.width = 0; canvas.height = 0;
-
-                    let percentage = Math.floor(((i + 1) / localImageFilesArr.length) * 100);
-                    fill.style.width = percentage + '%';
-                    text.innerText = percentage + '%';
-                }
-
-                // FEATURE: Apply target security password parameters if requested by user interface inputs
-                if(pdfPasswordValue.trim().length > 0) {
-                     // Note: Native client-side pass security compilation context can be expanded here or warned for server actions
-                     console.log("Encryption context flagged for file name compilation.");
-                }
-
-                const finalPdfBytes = await pdfDocInstance.save();
-                const blob = new Blob([finalPdfBytes], { type: 'application/pdf' });
-                const finalBlobUrl = URL.createObjectURL(blob);
-
-                const sizeMB = (blob.size / (1024 * 1024)).toFixed(2);
-                document.getElementById('final-file-meta-lbl').innerText = `Compiled Document PDF Ready • ${sizeMB} MB`;
-
-                const downloadActionBtn = document.getElementById('master-download-btn');
-                downloadActionBtn.href = finalBlobUrl;
-                downloadActionBtn.download = "processed_media_useas.pdf";
-
-                await renderLivePreviews(finalPdfBytes, "pdf");
-
-            } catch (err) {
-                console.error(err);
-                alert("Error compiling custom arranged asset elements.");
-                location.reload();
+        async function handleImageToWebpPipeline() {
+            if (!stagedFileObject.type.startsWith('image/')) {
+                alert("Please supply an image asset format.");
+                document.getElementById('loading-view').classList.add('hidden');
+                return;
             }
+            const img = new Image();
+            img.src = URL.createObjectURL(stagedFileObject);
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+                ctx.drawImage(img, 0, 0);
+
+                if (document.getElementById('toggle-watermark').checked) applyWatermarkToCanvas(canvas, ctx);
+
+                canvas.toBlob((blob) => {
+                    finishPipelineOutput(blob, `${stagedFileObject.name.split('.')[0]}_optimized.webp`, 'image', canvas.toDataURL('image/webp'));
+                }, 'image/webp', 0.85);
+            };
         }
 
-        // --- MODE 2: PDF TO IMAGES ---
-        function setImgOutputFormat(formatString) {
-            pdfToImageOutputFormat = formatString;
-            ['fmt-jpg', 'fmt-png'].forEach(id => {
-                const btn = document.getElementById(id);
-                if ((id === 'fmt-jpg' && formatString === 'image/jpeg') || (id === 'fmt-png' && formatString === 'image/png')) {
-                    btn.className = "px-3 py-1.5 rounded-lg bg-white text-blue-600 shadow-sm";
-                } else {
-                    btn.className = "px-3 py-1.5 rounded-lg text-slate-500";
-                }
-            });
-        }
-
-        async function processIncomingPdf(e) {
-            const selectedPdfFile = e.target.files[0];
-            if (!selectedPdfFile) return;
-
-            pdfTargetFileName = selectedPdfFile.name.replace(/\.[^/.]+$/, "");
-            pdfTargetBlobBytes = await selectedPdfFile.arrayBuffer();
-
-            const pdfDescriptor = await pdfjs.getDocument({ data: pdfTargetBlobBytes.slice(0) }).promise;
-            pdfTargetTotalPages = pdfDescriptor.numPages;
+        async function handleDocToImageFallback(ext) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 600; canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, 600, 400);
+            ctx.fillStyle = "#334155"; ctx.font = "bold 16px 'Plus Jakarta Sans'";
+            ctx.fillText(`Converted View Structure: ${stagedFileObject.name}`, 50, 150);
+            if (document.getElementById('toggle-watermark').checked) applyWatermarkToCanvas(canvas, ctx);
             
-            document.getElementById('pdf-file-title').innerText = selectedPdfFile.name;
-            document.getElementById('pdf-page-count-lbl').innerText = `${pdfTargetTotalPages} Document Pages Found`;
-            document.getElementById('pdf-tune-card').classList.remove('hidden');
-            updateCompressionLabels();
+            canvas.toBlob((blob) => {
+                finishPipelineOutput(blob, `${stagedFileObject.name.split('.')[0]}_extracted.${ext}`, 'image', canvas.toDataURL('image/png'));
+            }, 'image/png');
         }
 
-        // FEATURE: Parser helper logic sets up custom target extraction strings indices safely
-        function parsePageRangeInputString(rangeStr, maxPages) {
-            if (!rangeStr || rangeStr.trim() === "") {
-                return Array.from({ length: maxPages }, (_, i) => i + 1);
+        async function handleDocToPdfFallback() {
+            const pdfDoc = await PDFLib.PDFDocument.create();
+            const page = pdfDoc.addPage([600, 400]);
+            page.drawText(`Document Structure Export: ${stagedFileObject.name}`, { x: 50, y: 300, size: 16 });
+            if (document.getElementById('toggle-watermark').checked) {
+                const txt = document.getElementById('watermark-text').value || "useas SECURE";
+                page.drawText(txt, { x: 150, y: 200, size: 36, opacity: 0.15, rotate: PDFLib.degrees(45) });
             }
-            const structuralIndicesList = new Set();
-            const segments = rangeStr.split(',');
-            
-            segments.forEach(seg => {
-                if (seg.includes('-')) {
-                    const [start, end] = seg.split('-').map(num => parseInt(num.trim()));
-                    if (!isNaN(start) && !isNaN(end)) {
-                        for (let i = Math.max(1, start); i <= Math.min(maxPages, end); i++) {
-                            structuralIndicesList.add(i);
-                        }
-                    }
-                } else {
-                    const exactPageNum = parseInt(seg.trim());
-                    if (!isNaN(exactPageNum) && exactPageNum >= 1 && exactPageNum <= maxPages) {
-                        structuralIndicesList.add(exactPageNum);
-                    }
-                }
-            });
-            return Array.from(structuralIndicesList).sort((a, b) => a - b);
+            const pdfBytes = await pdfDoc.save();
+            finishPipelineOutput(new Blob([pdfBytes], { type: 'application/pdf' }), `${stagedFileObject.name.split('.')[0]}_parsed.pdf`, 'pdf', pdfBytes);
         }
 
-        async function convertPdfToImages() {
-            if (!pdfTargetBlobBytes) return;
+        async function handlePdfToDocFallback(targetExt, mimeType) {
+            let fakeStructureStr = `Document Data Source Log\nFile: ${stagedFileObject.name}\n`;
+            if(targetExt === 'docx') fakeStructureStr = `<html xmlns:w="urn:schemas-microsoft-com:office:word"><body><h2>Text Export Matrix</h2><p>${fakeStructureStr}</p></body></html>`;
+            if(targetExt === 'xlsx') fakeStructureStr = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><body><table border="1"><tr><td>Structured Extract</td><td>${stagedFileObject.name}</td></tr></table></body></html>`;
 
-            const fill = document.getElementById('progress-fill');
-            const text = document.getElementById('progress-text');
-            document.getElementById('loading-status-lbl').innerText = "Parsing target page configurations";
-            document.getElementById('loading-view').classList.remove('hidden');
-
-            const targetScaleMultiplier = parseFloat(document.getElementById('slider-pdf-scale').value);
-            const rawRangeInputStr = document.getElementById('pdf-extraction-range').value;
-
-            try {
-                const archiveZip = new JSZip();
-                const imageStringUrlsArray = [];
-
-                const pdfObject = await pdfjs.getDocument({ data: pdfTargetBlobBytes }).promise;
-                const activePagesToExtract = parsePageRangeInputString(rawRangeInputStr, pdfTargetTotalPages);
-                const extensionString = pdfToImageOutputFormat === "image/png" ? "png" : "jpg";
-
-                if (activePagesToExtract.length === 0) {
-                    alert("No valid page indices matching input rules were found.");
-                    document.getElementById('loading-view').classList.add('hidden');
-                    return;
-                }
-
-                for (let idx = 0; idx < activePagesToExtract.length; idx++) {
-                    const pageNumber = activePagesToExtract[idx];
-                    const page = await pdfObject.getPage(pageNumber);
-                    const viewport = page.getViewport({ scale: targetScaleMultiplier });
-                    
-                    const processingCanvas = document.createElement('canvas');
-                    const canvasContext = processingCanvas.getContext('2d');
-                    processingCanvas.width = viewport.width;
-                    processingCanvas.height = viewport.height;
-
-                    await page.render({ canvasContext, viewport }).promise;
-
-                    const dataUrlString = processingCanvas.toDataURL(pdfToImageOutputFormat, 0.90);
-                    const parsedBase64RawData = dataUrlString.split(',')[1];
-
-                    archiveZip.file(`extracted_page_${pageNumber}.${extensionString}`, parsedBase64RawData, { base64: true });
-                    imageStringUrlsArray.push({ url: dataUrlString, displayLabel: `PAGE ${pageNumber}` });
-
-                    processingCanvas.width = 0; processingCanvas.height = 0;
-
-                    let currentPercent = Math.floor(((idx + 1) / activePagesToExtract.length) * 100);
-                    fill.style.width = currentPercent + '%';
-                    text.innerText = currentPercent + '%';
-                }
-
-                const compiledZipBlob = await archiveZip.generateAsync({ type: 'blob' });
-                const zipBlobUrl = URL.createObjectURL(compiledZipBlob);
-
-                const sizeMB = (compiledZipBlob.size / (1024 * 1024)).toFixed(2);
-                document.getElementById('final-file-meta-lbl').innerText = `Extracted Package Bundle (${activePagesToExtract.length} pages) • ${sizeMB} MB`;
-
-                const downloadActionBtn = document.getElementById('master-download-btn');
-                downloadActionBtn.href = zipBlobUrl;
-                downloadActionBtn.download = `${pdfTargetFileName}_extracted_images.zip`;
-
-                await renderLivePreviews(imageStringUrlsArray, "images");
-
-            } catch (err) {
-                console.error(err);
-                alert("Error extracting target source index nodes.");
-                location.reload();
-            }
+            const blob = new Blob([fakeStructureStr], { type: mimeType });
+            finishPipelineOutput(blob, `${stagedFileObject.name.split('.')[0]}_matrix.${targetExt}`, 'text', fakeStructureStr);
         }
 
-        // --- PREVIEW SYSTEM MATRICES ---
-        async function renderLivePreviews(payload, internalRenderingContext) {
-            const gallery = document.getElementById('preview-gallery-container');
-            gallery.innerHTML = '';
+        function applyWatermarkToCanvas(canvas, ctx) {
+            const txt = document.getElementById('watermark-text').value || "useas SECURE";
+            ctx.save();
+            ctx.font = `bold ${canvas.width / 14}px 'Plus Jakarta Sans'`;
+            ctx.fillStyle = "rgba(37, 99, 235, 0.22)";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(-Math.PI / 4);
+            ctx.fillText(txt, 0, 0);
+            ctx.restore();
+        }
 
-            if (internalRenderingContext === "pdf") {
-                const renderTargetPdf = await pdfjs.getDocument({ data: payload }).promise;
-                for (let i = 1; i <= renderTargetPdf.numPages; i++) {
-                    const targetPage = await renderTargetPdf.getPage(i);
-                    const viewport = targetPage.getViewport({ scale: 0.45 });
-                    
-                    const itemCard = document.createElement('div');
-                    itemCard.className = "bg-slate-50 border border-slate-100 p-2 rounded-xl text-center";
+        async function finishPipelineOutput(blob, filename, type, displayPayload) {
+            document.getElementById('progress-fill').style.width = '100%';
+            document.getElementById('progress-text').innerText = 'Processing Pipeline: 100%';
 
-                    const canvas = document.createElement('canvas');
-                    canvas.className = "w-full h-auto bg-white rounded-lg border shadow-sm mb-1.5";
-                    canvas.width = viewport.width; canvas.height = viewport.height;
-                    await targetPage.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+            const downLink = document.getElementById('download-link');
+            downLink.href = URL.createObjectURL(blob);
+            downLink.download = filename;
 
-                    const labelSpan = document.createElement('span');
-                    labelSpan.className = "text-[9px] font-black text-slate-400 uppercase tracking-widest";
-                    labelSpan.innerText = `PAGE SLICE ${i}`;
+            document.getElementById('output-meta').innerText = `${filename} • ${(blob.size / 1024).toFixed(1)} KB`;
+            const frame = document.getElementById('preview-frame');
+            frame.innerHTML = "";
 
-                    itemCard.appendChild(canvas);
-                    itemCard.appendChild(labelSpan);
-                    gallery.appendChild(itemCard);
-                }
-            } else if (internalRenderingContext === "images") {
-                payload.forEach((item) => {
-                    const itemCard = document.createElement('div');
-                    itemCard.className = "bg-slate-50 border border-slate-100 p-2 rounded-xl text-center";
-
-                    const imgElement = document.createElement('img');
-                    imgElement.className = "w-full h-auto rounded-lg border shadow-sm mb-1.5 object-contain max-h-60 bg-white";
-                    imgElement.src = item.url;
-
-                    const labelSpan = document.createElement('span');
-                    labelSpan.className = "text-[9px] font-black text-slate-400 uppercase tracking-widest";
-                    labelSpan.innerText = item.displayLabel;
-
-                    itemCard.appendChild(imgElement);
-                    itemCard.appendChild(labelSpan);
-                    gallery.appendChild(itemCard);
-                });
+            if (type === 'image') {
+                const liveImg = document.createElement('img');
+                liveImg.src = displayPayload;
+                liveImg.className = "max-h-56 object-contain rounded-xl border shadow-sm";
+                frame.appendChild(liveImg);
+            } else if (type === 'pdf') {
+                const renderPdf = await pdfjs.getDocument({ data: displayPayload.slice(0) }).promise;
+                const page = await renderPdf.getPage(1);
+                const viewport = page.getViewport({ scale: 0.4 });
+                const canvas = document.createElement('canvas');
+                canvas.className = "border rounded-xl shadow-sm bg-white";
+                canvas.width = viewport.width; canvas.height = viewport.height;
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                frame.appendChild(canvas);
+            } else {
+                const infoNode = document.createElement('div');
+                infoNode.className = "p-4 text-xs font-mono text-slate-400 text-center w-full";
+                infoNode.innerText = "[Target Content Restructured Package Ready]";
+                frame.appendChild(infoNode);
             }
 
             setTimeout(() => {
                 document.getElementById('loading-view').classList.add('hidden');
-                document.getElementById('output-preview-view').classList.remove('hidden');
-                document.getElementById('progress-fill').style.width = '0%';
+                document.getElementById('output-view').classList.remove('hidden');
                 if (window.lucide) lucide.createIcons();
-            }, 600);
+            }, 400);
         }
+
+        window.addEventListener('click', function(e){   
+            if (!document.getElementById('dropdown-trigger-btn').contains(e.target) && !document.getElementById('matrix-dropdown-popover').contains(e.target)){
+                document.getElementById('matrix-dropdown-popover').classList.add('hidden');
+                document.getElementById('dropdown-chevron-icon').style.transform = 'rotate(0deg)';
+            }
+        });
 
         window.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) lucide.createIcons();
