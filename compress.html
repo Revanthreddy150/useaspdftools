@@ -3,18 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compress PDF - useas</title>
+    <title>Compress PDF & Images - useas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; overflow-x: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;700;800&display=swap');
         
-        .float-container { display: flex; gap: 12px; height: 60px; align-items: center; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            color: #0f172a; 
+            overflow-x: hidden; 
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background-color: #f8fafc;
+        }
+
+        /* --- Premium Animated Background Grid & Gradients --- */
+        .bg-pattern {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-color: #f8fafc;
+            background-image: 
+                linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .bg-glow-1 {
+            position: fixed;
+            top: -10%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            animation: floatGlow 8s ease-in-out infinite alternate;
+        }
+
+        .bg-glow-2 {
+            position: fixed;
+            bottom: -10%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            animation: floatGlow 12s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, 20px) scale(1.15); }
+        }
+
+        /* --- Text & UI Animations --- */
+        .float-container { display: flex; gap: 12px; height: 60px; align-items: center; justify-content: center; }
         .float-letter {
-            font-size: 3.5rem; font-weight: 900; color: #2563eb;
+            font-size: 3.5rem; font-weight: 900;
+            background: linear-gradient(135deg, #2563eb, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             opacity: 0; animation: floatUp 2s infinite;
         }
         .float-letter:nth-child(1) { animation-delay: 0.0s; }
@@ -24,110 +80,133 @@
         .float-letter:nth-child(5) { animation-delay: 0.8s; }
 
         @keyframes floatUp {
-            0% { opacity: 0; transform: translateY(20px); }
+            0% { opacity: 0; transform: translateY(15px); }
             20% { opacity: 1; transform: translateY(0px); }
-            40% { opacity: 0; transform: translateY(-30px); }
+            40% { opacity: 0; transform: translateY(-20px); }
             100% { opacity: 0; }
         }
 
-        .level-card { cursor: pointer; transition: all 0.2s; border: 2px solid #e2e8f0; }
-        .level-card:hover { border-color: #2563eb; transform: translateY(-2px); }
-        .level-card.active { border-color: #2563eb; background-color: #eff6ff; }
+        .level-card { cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid #e2e8f0; }
+        .level-card:hover { border-color: #2563eb; transform: translateY(-4px); box-shadow: 0 12px 20px -8px rgba(37, 99, 235, 0.15); }
+        .level-card.active { border-color: #2563eb; background-color: #eff6ff; box-shadow: 0 8px 16px -6px rgba(37, 99, 235, 0.1); }
         
-        .pdf-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .reveal { animation: slideUp 0.5s ease-out forwards; opacity: 0; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .pdf-shadow { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.03); }
+        .reveal { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 
         #progress-fill { transition: width 0.4s ease; }
+        .drop-active { border-color: #2563eb !important; background-color: rgba(239, 246, 255, 0.6) !important; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
 
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 h-16 flex items-center px-6 sticky top-0 z-50">
+    <div class="bg-pattern"></div>
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+
+    <nav class="bg-white/70 backdrop-blur-md border-b border-slate-200 h-16 flex items-center px-6 sticky top-0 z-50 justify-between">
         <div class="flex items-center gap-3 cursor-pointer group" onclick="window.history.back()">
-            <i data-lucide="arrow-left" class="w-6 h-6 text-slate-400 group-hover:text-blue-600"></i>
+            <i data-lucide="arrow-left" class="w-6 h-6 text-slate-400 group-hover:text-blue-600 transition-colors"></i>
             <div class="flex items-center gap-2">
-                <div class="bg-blue-600 p-1.5 rounded-lg"><i data-lucide="minimize-2" class="text-white w-4 h-4"></i></div>
-                <span class="text-xl font-extrabold tracking-tight">useas</span>
+                <div class="bg-blue-600 p-1.5 rounded-lg flex items-center justify-center shadow-sm"><i data-lucide="minimize-2" class="text-white w-4 h-4"></i></div>
+                <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-pink-500 bg-clip-text text-transparent">useas</span>
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow flex flex-col items-center">
+    <main class="flex-grow flex flex-col items-center justify-start w-full">
         
-        <div id="upload-view" class="w-full max-w-2xl px-6 py-20 text-center">
-            <h1 class="text-4xl font-black mb-4">Compress PDF</h1>
-            <p class="text-slate-500 mb-10 text-lg">Select your preferred compression level.</p>
+        <div id="upload-view" class="w-full max-w-3xl px-6 py-16 text-center" style="display: block;">
+            <h1 class="text-4xl font-extrabold mb-3 tracking-tight text-slate-900 md:text-5xl">Compress PDF & Images</h1>
+            <p class="text-slate-500 mb-12 text-base max-w-md mx-auto">Optimize your documents or images by selecting an ideal compression level setting.</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-                <div onclick="setQuality(0.3, 1.0, this)" class="level-card bg-white p-5 rounded-3xl text-left">
-                    <p class="font-black text-xs text-blue-600 uppercase mb-1">Extreme</p>
-                    <p class="font-bold text-slate-800">Smallest Size</p>
-                    <p class="text-[10px] text-slate-400 mt-2">Maximum compression, lower quality.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+                <div onclick="setQuality(0.3, 1.0, this)" class="level-card bg-white/90 backdrop-blur-sm p-6 rounded-3xl text-left">
+                    <p class="font-black text-xs text-blue-600 uppercase tracking-wider mb-1">Extreme</p>
+                    <p class="font-bold text-slate-800 text-base">Smallest Size</p>
+                    <p class="text-[12px] text-slate-400 mt-2 leading-relaxed">Maximum compression, downscaled asset optimization.</p>
                 </div>
-                <div onclick="setQuality(0.6, 1.5, this)" class="level-card active bg-white p-5 rounded-3xl text-left">
-                    <p class="font-black text-xs text-blue-600 uppercase mb-1">Recommended</p>
-                    <p class="font-bold text-slate-800">Balanced</p>
-                    <p class="text-[10px] text-slate-400 mt-2">Good quality, good size reduction.</p>
+                <div onclick="setQuality(0.6, 1.5, this)" class="level-card active bg-white/90 backdrop-blur-sm p-6 rounded-3xl text-left">
+                    <p class="font-black text-xs text-blue-600 uppercase tracking-wider mb-1">Recommended</p>
+                    <p class="font-bold text-slate-800 text-base">Balanced</p>
+                    <p class="text-[12px] text-slate-400 mt-2 leading-relaxed">Perfect performance benchmark optimization ratio.</p>
                 </div>
-                <div onclick="setQuality(0.9, 2.0, this)" class="level-card bg-white p-5 rounded-3xl text-left">
-                    <p class="font-black text-xs text-blue-600 uppercase mb-1">High Quality</p>
-                    <p class="font-bold text-slate-800">Less Compression</p>
-                    <p class="text-[10px] text-slate-400 mt-2">Original quality, slightly smaller size.</p>
+                <div onclick="setQuality(0.9, 2.0, this)" class="level-card bg-white/90 backdrop-blur-sm p-6 rounded-3xl text-left">
+                    <p class="font-black text-xs text-blue-600 uppercase tracking-wider mb-1">High Quality</p>
+                    <p class="font-bold text-slate-800 text-base">Less Compression</p>
+                    <p class="text-[12px] text-slate-400 mt-2 leading-relaxed">Keeps full element details and rendering accuracy.</p>
                 </div>
             </div>
 
-            <input type="file" id="pdf-input" class="hidden" accept="application/pdf" onchange="startCompression(event)">
-            <label for="pdf-input" class="bg-white border-2 border-dashed border-slate-300 rounded-[2.5rem] p-16 md:p-20 hover:border-blue-500 transition-all cursor-pointer shadow-xl flex flex-col items-center group">
-                <div class="bg-blue-600 text-white p-5 rounded-2xl mb-6 shadow-lg group-hover:scale-105 transition-transform">
-                    <i data-lucide="zap" class="w-8 h-8"></i>
+            <div class="bg-white/90 backdrop-blur-sm border border-slate-200 p-6 rounded-3xl max-w-xl mx-auto mb-10 shadow-xl text-left">
+                <label class="block font-black text-xs text-blue-600 uppercase tracking-wider mb-3">Custom Target File Size Limit</label>
+                <div class="flex items-center gap-4">
+                    <input type="number" id="target-size-value" value="200" min="1" class="w-28 bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-800 text-center outline-none focus:border-blue-500 transition-all">
+                    <select id="target-size-unit" class="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500 transition-all cursor-pointer">
+                        <option value="KB" selected>KB</option>
+                        <option value="MB">MB</option>
+                    </select>
+                    <span class="text-xs text-slate-400 font-medium leading-normal">The processor will auto-recalculate parameters to compress underneath this value.</span>
                 </div>
-                <span class="text-2xl font-bold">Upload to Compress</span>
+            </div>
+
+            <input type="file" id="pdf-input" class="hidden" accept="application/pdf, image/*" onchange="processFile(this.files[0])">
+            <label id="drop-zone" for="pdf-input" class="bg-white/80 backdrop-blur-sm border-2 border-dashed border-slate-200 rounded-[2.5rem] p-16 md:p-20 hover:border-blue-500 transition-all cursor-pointer shadow-xl flex flex-col items-center group justify-center block">
+                <div class="bg-blue-600 text-white p-5 rounded-2xl mb-5 shadow-lg group-hover:scale-105 transition-transform flex items-center justify-center">
+                    <i data-lucide="zap" class="w-7 h-7"></i>
+                </div>
+                <span class="text-2xl font-extrabold text-slate-800 tracking-tight">Upload PDF or Image</span>
+                <span class="text-sm text-slate-400 mt-1.5">or drag and drop your file here</span>
             </label>
         </div>
 
-        <div id="loading-view" class="hidden fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
+        <div id="loading-view" class="fixed inset-0 bg-white/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center" style="display: none;">
             <div class="float-container mb-4">
                 <span class="float-letter">u</span><span class="float-letter">s</span><span class="float-letter">e</span><span class="float-letter">a</span><span class="float-letter">s</span>
             </div>
-            <div class="w-48 h-1.5 bg-slate-100 rounded-full overflow-hidden mb-3">
-                <div id="progress-fill" class="h-full bg-blue-600 w-0"></div>
+            <div class="w-52 h-1.5 bg-slate-100 rounded-full overflow-hidden mb-3 shadow-inner">
+                <div id="progress-fill" class="h-full bg-gradient-to-r from-blue-600 to-pink-500 w-0"></div>
             </div>
-            <p id="progress-text" class="font-black text-blue-600 text-xl">0%</p>
-            <p class="font-bold text-slate-300 uppercase tracking-[0.3em] text-[9px] mt-2">Compressing Assets</p>
+            <p id="progress-text" class="font-black text-blue-600 text-2xl tracking-tighter">0%</p>
+            <p class="font-bold text-slate-400 uppercase tracking-[0.3em] text-[10px] mt-2">Compressing Assets</p>
         </div>
 
-        <div id="preview-view" class="hidden w-full flex flex-col items-center">
+        <div id="preview-view" class="w-full flex flex-col items-center" style="display: none;">
             <div class="w-full max-w-4xl p-6 md:p-10 text-center">
-                <div class="bg-blue-50 border border-blue-100 p-6 rounded-3xl mb-10 inline-block">
-                    <p class="text-blue-600 font-bold mb-1">Compression Complete</p>
-                    <p id="size-report" class="text-slate-500 text-sm">Reduced from 0MB to 0MB</p>
+                <div class="bg-blue-50/80 backdrop-blur-sm border border-blue-100/60 p-6 rounded-3xl mb-6 inline-block shadow-sm">
+                    <p class="text-blue-600 font-extrabold mb-1 text-sm tracking-wide uppercase">Compression Complete</p>
+                    <p id="size-report" class="text-slate-500 font-medium text-base">Reduced from 0MB to 0MB</p>
                 </div>
             </div>
-            <div class="w-full max-w-4xl p-6 md:p-10 space-y-10" id="final-pages-container"></div>
-            <div class="h-40"></div>
-            <div class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-200 p-5 z-50">
-                <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <div class="w-full max-w-xl px-6 space-y-12" id="final-pages-container"></div>
+            
+            <div class="h-44"></div>
+            
+            <div class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/80 p-5 z-50 shadow-xl">
+                <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
-                        <div class="bg-green-100 text-green-600 p-2 rounded-full"><i data-lucide="check" class="w-5 h-5"></i></div>
-                        <div><p class="text-sm font-bold">Optimized Ready</p><p id="quality-tag" class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Balanced Quality</p></div>
+                        <div class="bg-green-100 text-green-600 p-2.5 rounded-full flex items-center justify-center shadow-sm"><i data-lucide="check" class="w-4 h-4"></i></div>
+                        <div class="text-left">
+                            <p class="text-sm font-extrabold text-slate-800">Optimized Ready</p>
+                            <p id="quality-tag" class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Balanced Quality</p>
+                        </div>
                     </div>
-                    <a id="dl-link" href="#" download="compressed_useas.pdf" class="w-full md:w-auto bg-blue-600 text-white px-12 py-4 rounded-2xl font-extrabold text-lg flex items-center justify-center gap-3 shadow-xl">
-                        Download PDF <i data-lucide="download"></i>
+                    <a id="dl-link" href="#" download="compressed_useas.pdf" class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-pink-500 hover:from-blue-700 hover:to-pink-600 text-white px-12 py-4 rounded-2xl font-extrabold text-base flex items-center justify-center gap-2.5 shadow-lg shadow-blue-600/10 transition-all transform hover:-translate-y-0.5">
+                        Download PDF <i data-lucide="download" class="w-4 h-4"></i>
                     </a>
                 </div>
             </div>
         </div>
-
     </main>
 
     <script>
         const pdfjs = window['pdfjs-dist/build/pdf'];
         pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-        // Defaults
         let compQuality = 0.6;
         let compScale = 1.5;
+        let activeBlobUrl = null;
 
         function setQuality(q, s, el) {
             compQuality = q;
@@ -135,95 +214,207 @@
             document.querySelectorAll('.level-card').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
             
-            // Update tag in footer
             const labels = ["Extreme Quality", "Balanced Quality", "Original Quality"];
             const idx = q === 0.3 ? 0 : q === 0.6 ? 1 : 2;
             document.getElementById('quality-tag').innerText = labels[idx];
         }
 
-        async function startCompression(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        // Drag Zone Handling
+        const dropZone = document.getElementById('drop-zone');
+        if (dropZone) {
+            ['dragenter', 'dragover'].forEach(name => {
+                dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.add('drop-active'); });
+            });
+            ['dragleave', 'drop'].forEach(name => {
+                dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.remove('drop-active'); });
+            });
+            dropZone.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if(files.length) processFile(files[0]);
+            });
+        }
 
+        function processFile(file) {
+            if (!file) return;
+            startCompression(file);
+        }
+
+        async function startCompression(file) {
             const originalSize = (file.size / 1024 / 1024).toFixed(2);
-            document.getElementById('upload-view').classList.add('hidden');
-            document.getElementById('loading-view').classList.remove('hidden');
+            document.getElementById('upload-view').style.display = 'none';
+            document.getElementById('loading-view').style.display = 'flex';
 
             const progFill = document.getElementById('progress-fill');
             const progText = document.getElementById('progress-text');
+            const container = document.getElementById('final-pages-container');
+            container.innerHTML = '';
+
+            // Extract Custom Target values to adjust processing dynamic scales internally
+            const userSizeVal = parseFloat(document.getElementById('target-size-value').value) || 200;
+            const userSizeUnit = document.getElementById('target-size-unit').value;
+            const targetSizeBytes = userSizeUnit === 'MB' ? userSizeVal * 1024 * 1024 : userSizeVal * 1024;
+
+            let finalQualitySetting = compQuality;
+            let finalScaleSetting = compScale;
+
+            // Intelligent parameter modifier fallback if file exceeds target sizes
+            if (file.size > targetSizeBytes) {
+                const targetRatio = targetSizeBytes / file.size;
+                if (targetRatio < 0.3) {
+                    finalQualitySetting = Math.min(finalQualitySetting, 0.35);
+                    finalScaleSetting = Math.min(finalScaleSetting, 0.9);
+                } else if (targetRatio < 0.6) {
+                    finalQualitySetting = Math.min(finalQualitySetting, 0.55);
+                    finalScaleSetting = Math.min(finalScaleSetting, 1.2);
+                }
+            }
 
             try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
                 const outPdf = await PDFLib.PDFDocument.create();
 
-                const container = document.getElementById('final-pages-container');
-                container.innerHTML = '';
+                // ROUTE 1: If input asset is an Image
+                if (file.type.startsWith('image/')) {
+                    progFill.style.width = '30%';
+                    progText.innerText = '30%';
 
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const viewport = page.getViewport({ scale: compScale });
+                    const imgElement = new Image();
+                    imgElement.src = URL.createObjectURL(file);
                     
+                    await new Promise((resolve, reject) => {
+                        imgElement.onload = resolve;
+                        imgElement.onerror = reject;
+                    });
+
+                    progFill.style.width = '60%';
+                    progText.innerText = '60%';
+
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-
-                    await page.render({ canvasContext: ctx, viewport }).promise;
-
-                    // Apply the selected quality level here
-                    const imgData = canvas.toDataURL('image/jpeg', compQuality);
-                    const img = await outPdf.embedJpg(imgData);
                     
+                    // Apply dynamic optimization scale presets
+                    canvas.width = imgElement.naturalWidth * (finalScaleSetting / 2);
+                    canvas.height = imgElement.naturalHeight * (finalScaleSetting / 2);
+                    ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+
+                    const imgData = canvas.toDataURL('image/jpeg', finalQualitySetting);
+                    const img = await outPdf.embedJpg(imgData);
                     const outPage = outPdf.addPage([img.width, img.height]);
                     outPage.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
 
-                    // Generate Preview UI
-                    const wrapper = document.createElement('div');
-                    wrapper.className = "reveal flex flex-col items-center w-full";
-                    const previewCanvas = document.createElement('canvas');
-                    previewCanvas.className = "pdf-shadow bg-white w-full rounded-xl mb-4";
-                    const pCtx = previewCanvas.getContext('2d');
-                    previewCanvas.height = viewport.height;
-                    previewCanvas.width = viewport.width;
-                    pCtx.drawImage(canvas, 0, 0);
+                    // Append UI Node Preview Layout Template
+                    createPreviewCard(canvas, 1, 1, container);
+                    
+                    // Cleanup memory
+                    URL.revokeObjectURL(imgElement.src);
+                    canvas.width = 0; canvas.height = 0;
 
-                    const label = document.createElement('span');
-                    label.className = "text-[10px] font-black text-slate-400 uppercase tracking-widest mb-10";
-                    label.innerText = `OPTIMIZED PAGE ${i} OF ${pdf.numPages}`;
+                    progFill.style.width = '100%';
+                    progText.innerText = '100%';
 
-                    wrapper.appendChild(previewCanvas);
-                    wrapper.appendChild(label);
-                    container.appendChild(wrapper);
+                // ROUTE 2: If input asset is a PDF Document
+                } else if (file.type === "application/pdf") {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
 
-                    // Update Progress
-                    let p = Math.floor((i / pdf.numPages) * 100);
-                    progFill.style.width = p + '%';
-                    progText.innerText = p + '%';
-                    await new Promise(r => setTimeout(r, 40));
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const viewport = page.getViewport({ scale: finalScaleSetting });
+                        
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        await page.render({ canvasContext: ctx, viewport }).promise;
+
+                        const imgData = canvas.toDataURL('image/jpeg', finalQualitySetting);
+                        const img = await outPdf.embedJpg(imgData);
+                        
+                        const outPage = outPdf.addPage([img.width, img.height]);
+                        outPage.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+
+                        createPreviewCard(canvas, i, pdf.numPages, container);
+
+                        canvas.width = 0; canvas.height = 0; 
+
+                        let p = Math.floor((i / pdf.numPages) * 100);
+                        progFill.style.width = p + '%';
+                        progText.innerText = p + '%';
+                        await new Promise(r => setTimeout(r, 30));
+                    }
+                } else {
+                    alert("Unsupported format. Please upload a PDF or an Image file.");
+                    location.reload();
+                    return;
                 }
 
+                // Compile and generate downloadable optimized PDF
                 const compressedBytes = await outPdf.save();
-                const compressedSize = (compressedBytes.length / 1024 / 1024).toFixed(2);
                 
-                document.getElementById('size-report').innerText = `Reduced from ${originalSize}MB to ${compressedSize}MB`;
+                // Formulate target smart size labels text string dynamically
+                let currentNewSize = compressedBytes.length / 1024 / 1024;
+                let oldSizeStr = originalSize < 1 ? `${(originalSize * 1024).toFixed(0)} KB` : `${originalSize} MB`;
+                let newSizeStr = currentNewSize < 1 ? `${(compressedBytes.length / 1024).toFixed(0)} KB` : `${currentNewSize.toFixed(2)} MB`;
+
+                document.getElementById('size-report').innerText = `Reduced from ${oldSizeStr} to ${newSizeStr}`;
                 
-                const url = URL.createObjectURL(new Blob([compressedBytes], {type: 'application/pdf'}));
-                document.getElementById('dl-link').href = url;
+                if(activeBlobUrl) URL.revokeObjectURL(activeBlobUrl);
+                activeBlobUrl = URL.createObjectURL(new Blob([compressedBytes], {type: 'application/pdf'}));
+                
+                // Safe Click Anchor Injection Pipeline Routine to fix sandboxed download blockers
+                const dlLink = document.getElementById('dl-link');
+                dlLink.href = activeBlobUrl;
+                dlLink.onclick = (e) => {
+                    if (window.self !== window.top) {
+                        e.preventDefault();
+                        const a = document.createElement('a');
+                        a.href = activeBlobUrl;
+                        a.download = "compressed_useas.pdf";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }
+                };
 
                 setTimeout(() => {
-                    document.getElementById('loading-view').classList.add('hidden');
-                    document.getElementById('preview-view').classList.remove('hidden');
-                    lucide.createIcons();
-                }, 600);
+                    document.getElementById('loading-view').style.display = 'none';
+                    document.getElementById('preview-view').style.display = 'flex';
+                    if(window.lucide) lucide.createIcons();
+                }, 500);
 
             } catch (err) {
                 console.error(err);
-                alert("Compression failed. Try a different file.");
+                alert("Processing failed. Try a different file.");
                 location.reload();
             }
         }
-        lucide.createIcons();
+
+        // Refactored dynamic page preview renderer builder element
+        function createPreviewCard(sourceCanvas, index, total, targetContainer) {
+            const wrapper = document.createElement('div');
+            wrapper.className = "reveal flex flex-col items-center w-full bg-white p-5 rounded-3xl shadow-md border border-slate-100/80";
+            
+            const previewCanvas = document.createElement('canvas');
+            previewCanvas.className = "pdf-shadow bg-white w-full rounded-2xl mb-4 border border-slate-100";
+            const pCtx = previewCanvas.getContext('2d');
+            
+            previewCanvas.width = sourceCanvas.width;
+            previewCanvas.height = sourceCanvas.height;
+            pCtx.drawImage(sourceCanvas, 0, 0);
+
+            const label = document.createElement('span');
+            label.className = "text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1";
+            label.innerText = `OPTIMIZED PAGE ${index} OF ${total}`;
+
+            wrapper.appendChild(previewCanvas);
+            wrapper.appendChild(label);
+            targetContainer.appendChild(wrapper);
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) lucide.createIcons();
+        });
+        setTimeout(() => { if(window.lucide) lucide.createIcons(); }, 1000);
     </script>
 </body>
 </html>
